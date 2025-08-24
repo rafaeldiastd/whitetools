@@ -14,6 +14,7 @@ const routes = [
     path: '/schedule/:id',
     name: 'schedule-view',
     component: ScheduleView,
+    props: true,
   },
   {
     path: '/bearhive/create',
