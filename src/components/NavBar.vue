@@ -12,7 +12,7 @@
 import { RouterLink } from 'vue-router'
 
 const tabs = [
-    { label: 'Schedule', link: '/', icon: '/src/assets/images/schedule-icon.png' },
-    { label: 'BearHive', link: '/bearhive/create', icon: '/src/assets/images/bearspace-icon.png' },
+    { label: 'Schedule', link: '/', icon: '/images/schedule-icon.png' },
+    { label: 'BearHive', link: '/bearhive/create', icon: '/images/bearspace-icon.png' },
 ];
 </script>

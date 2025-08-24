@@ -9,8 +9,8 @@
             <div
                 class="grid grid-cols-2 grid-rows-2 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-4">
                 <div
-                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(@/assets/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
-                    <img class="w-8 h-8" src="@/assets/images/flag.png" alt="">
+                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
+                    <img class="w-8 h-8" src="/images/flag.png" alt="">
                     <p class="text-xl"> {{ scheduleStore.linkData?.title }}</p>
                     <div class="flex flex-col gap-1 leading-none">
                         <p class="text-sm font-light">Share the link with your alliance</p>
@@ -94,8 +94,8 @@
             <div
                 class="grid grid-cols-2 grid-rows-2 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-4">
                 <div
-                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(@/assets/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
-                    <img class="w-8 h-8" src="@/assets/images/flag.png" alt="">
+                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
+                    <img class="w-8 h-8" src="/images/flag.png" alt="">
                     <p class="text-xl"> {{ scheduleStore.linkData?.title }}</p>
                     <div class="flex flex-col gap-1 leading-none">
                         <p class="text-sm font-light">Share the link with your alliance</p>
@@ -173,8 +173,8 @@
             <div
                 class="grid grid-cols-2 grid-rows-2 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-4">
                 <div
-                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(@/assets/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
-                    <img class="w-8 h-8" src="@/assets/images/flag.png" alt="">
+                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
+                    <img class="w-8 h-8" src="/images/flag.png" alt="">
                     <p class="text-xl"> {{ scheduleStore.linkData?.title }}</p>
                     <div class="flex flex-col gap-1 leading-none">
                         <p class="text-sm font-light">Share the link with your alliance</p>
@@ -245,7 +245,7 @@
     <div v-if="showSignupModal"
         class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-95 ">
         <div class="bg-wos-800 p-6 rounded-xl w-80 max-w-full flex flex-col gap-4 relative">
-            <img src="@/assets/images/frametop-modal.png" class="absolute top-[-5px] left-0 z-99"></img>
+            <img src="/images/frametop-modal.png" class="absolute top-[-5px] left-0 z-99"></img>
             <h2 class="text-wos-50 text-center">Your ID Player</h2>
             <div class="flex flex-col gap-1">
                 <input type="text" v-model="playerId"
@@ -267,7 +267,7 @@
     <div v-if="showModalAdmin"
         class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-95 ">
         <div class="bg-wos-800 p-6 rounded-xl w-80 max-w-full flex flex-col gap-4 relative">
-            <img src="@/assets/images/frametop-modal.png" class="absolute top-[-5px] left-0 z-99"></img>
+            <img src="/images/frametop-modal.png" class="absolute top-[-5px] left-0 z-99"></img>
             <h2 class="text-wos-50 text-center">Your Access Key</h2>
             <p v-if="scheduleStore.accessGranted" class="text-green-500 text-center">Access Granted</p>
             <div class="flex flex-col gap-1">
@@ -314,7 +314,7 @@
         </div>
     </div>
 
-    <img src="@/assets/images/frametop.png" class="fixed bottom-[70px] left-0 z-92"></img>
+    <img src="/images/frametop.png" class="fixed bottom-[70px] left-0 z-92"></img>
 </template>
 <script setup>
 const currentTab = ref('construction');

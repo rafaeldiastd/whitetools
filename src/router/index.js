@@ -30,8 +30,7 @@ const routes = [
     redirect: '/'
   }
 
-],
-
+]
 
 export const router = createRouter({
   history: createWebHistory(),
