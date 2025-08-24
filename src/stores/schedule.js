@@ -2,9 +2,7 @@ import { defineStore } from 'pinia'
 import { supabase } from '@/services/supabase'
 import { getPlayerInfo } from '@/services/wosapi'
 import { realtimeService } from '@/services/realtimeService'
-
-
-import router from '@/router'
+import { router } from '@/router'
 
 export const useScheduleStore = defineStore('schedule', {
   state: () => ({
