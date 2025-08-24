@@ -7,9 +7,9 @@
                 Construction
             </div>
             <div
-                class="grid grid-cols-2 grid-rows-2 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-4">
+                class="grid grid-cols-2 grid-rows-5 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-2">
                 <div
-                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
+                    class="row-span-5 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
                     <img class="w-8 h-8" src="/images/flag.png" alt="">
                     <p class="text-xl"> {{ scheduleStore.linkData?.title }}</p>
                     <div class="flex flex-col gap-1 leading-none">
@@ -17,26 +17,26 @@
                     </div>
                 </div>
                 <div
-                    class="row-span-1 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-4 text-xs">
+                    class="row-span-3 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
                     <div class="flex justify-between items-center py-1">
-                        <p>Active Bonus</p>
+                        <p>Day</p>
                         <p>{{ scheduleStore.linkData?.construction_time }}</p>
                     </div>
                     <div class="flex justify-between items-center py-1">
-                        <p>Construction Speed:</p>
+                        <p>Construction:</p>
                         <p> +10%</p>
                     </div>
                     <div class="flex justify-between items-center  py-1">
-                        <p>Search Speed:</p>
+                        <p>Search:</p>
                         <p> +10% </p>
                     </div>
                     <div class="flex justify-between items-center py-1">
-                        <p>Training Speed:</p>
+                        <p>Training:</p>
                         <p> +10%</p>
                     </div>
                 </div>
                 <div
-                    class="row-span-1 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-4 text-xs">
+                    class="row-span-2 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
                     <p>{{ scheduleStore.linkData?.description }}</p>
                 </div>
             </div>
@@ -92,9 +92,9 @@
                 Research
             </div>
             <div
-                class="grid grid-cols-2 grid-rows-2 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-4">
+                class="grid grid-cols-2 grid-rows-5 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-2">
                 <div
-                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
+                    class="row-span-5 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
                     <img class="w-8 h-8" src="/images/flag.png" alt="">
                     <p class="text-xl"> {{ scheduleStore.linkData?.title }}</p>
                     <div class="flex flex-col gap-1 leading-none">
@@ -102,26 +102,26 @@
                     </div>
                 </div>
                 <div
-                    class="row-span-1 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-4 text-xs">
+                    class="row-span-3 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
                     <div class="flex justify-between items-center py-1">
-                        <p>Active Bonus</p>
+                        <p>Day:</p>
                         <p>{{ scheduleStore.linkData?.research_time }}</p>
                     </div>
                     <div class="flex justify-between items-center  py-1">
-                        <p>Search Speed:</p>
+                        <p>Search:</p>
                         <p> +10% </p>
                     </div>
                     <div class="flex justify-between items-center py-1">
-                        <p>Construction Speed:</p>
+                        <p>Construction:</p>
                         <p> +10%</p>
                     </div>
                     <div class="flex justify-between items-center py-1">
-                        <p>Training Speed:</p>
+                        <p>Training:</p>
                         <p> +10%</p>
                     </div>
                 </div>
                 <div
-                    class="row-span-1 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-4 text-xs">
+                    class="row-span-2 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
                     <p>{{ scheduleStore.linkData?.description }}</p>
                 </div>
             </div>
@@ -171,9 +171,9 @@
                 Training Troops
             </div>
             <div
-                class="grid grid-cols-2 grid-rows-2 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-4">
+                class="grid grid-cols-2 grid-rows-5 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-2">
                 <div
-                    class="row-span-2 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
+                    class="row-span-5 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
                     <img class="w-8 h-8" src="/images/flag.png" alt="">
                     <p class="text-xl"> {{ scheduleStore.linkData?.title }}</p>
                     <div class="flex flex-col gap-1 leading-none">
@@ -181,9 +181,9 @@
                     </div>
                 </div>
                 <div
-                    class="row-span-1 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-4 text-xs">
+                    class="row-span-3 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
                     <div class="flex justify-between items-center py-1">
-                        <p>Active Bonus</p>
+                        <p>Day:</p>
                         <p>{{ scheduleStore.linkData?.training_time }}</p>
                     </div>
                     <div class="flex justify-between items-center  py-1">
@@ -191,12 +191,12 @@
                         <p> +200 </p>
                     </div>
                     <div class="flex justify-between items-center py-1">
-                        <p>Training Speed:</p>
+                        <p>Training:</p>
                         <p>+50%</p>
                     </div>
                 </div>
                 <div
-                    class="row-span-1 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-4 text-xs">
+                    class="row-span-2 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
                     <p>{{ scheduleStore.linkData?.description }}</p>
                 </div>
             </div>
