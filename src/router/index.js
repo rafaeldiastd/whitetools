@@ -1,23 +1,39 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import BearHiveCreate from '../views/BearHive/Create.vue'
+import BearHiveView from '../views/BearHive/View.vue'
+import ScheduleCreate from '../views/Schedule/Create.vue'
+import ScheduleView from '../views/Schedule/View.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: HomeView,
+      path: '/bearhive/create',
+      name: 'bearhive-create',
+      component: BearHiveCreate,
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/bearhive/view',
+      name: 'bearhive-view',
+      component: BearHiveView,
     },
+    {
+      path: '/',
+      name: 'schedule-create',
+      component: ScheduleCreate,
+    },
+    {
+      path: '/schedule/:id',
+      name: 'schedule-view',
+      component: ScheduleView,
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
+    }
+
   ],
+
 })
 
 export default router

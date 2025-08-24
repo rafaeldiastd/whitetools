@@ -1,86 +1,105 @@
 /* color palette from <https://github.com/vuejs/theme> */
-:root {
-  --vt-c-white: #ffffff;
-  --vt-c-white-soft: #f8f8f8;
-  --vt-c-white-mute: #f2f2f2;
-
-  --vt-c-black: #181818;
-  --vt-c-black-soft: #222222;
-  --vt-c-black-mute: #282828;
-
-  --vt-c-indigo: #2c3e50;
-
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
-
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
-
-/* semantic color variables for this project */
-:root {
-  --color-background: var(--vt-c-white);
-  --color-background-soft: var(--vt-c-white-soft);
-  --color-background-mute: var(--vt-c-white-mute);
-
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
-
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-1);
-
-  --section-gap: 160px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: var(--vt-c-black);
-    --color-background-soft: var(--vt-c-black-soft);
-    --color-background-mute: var(--vt-c-black-mute);
-
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
-
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
-  }
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
-}
+@import url('https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400;700&display=swap');
+@import "tailwindcss";
 
 body {
-  min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
-  transition:
-    color 0.5s,
-    background-color 0.5s;
-  line-height: 1.6;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
-  font-size: 15px;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-wos-900);
+  color: var(--color-wos-500);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-wos);
+  font-weight: 100;
+}
+
+h1 {
+  color: var(--color-wos-50);
+  font-size: 2em;
+  text-shadow: 0px 3px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--color-wostools-200); 
+  
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-wostools-700); 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-wostools-500); 
+}
+
+@theme {
+--color-wostools-900: #003463;
+--color-wostools-800: #0D3C70;
+--color-wostools-750: #0D60A0;
+--color-wostools-700: #0D4B88;
+--color-wostools-600: #4DA5E4;
+--color-wostools-500: #34759F;
+--color-wostools-400: #2A7ECA;
+--color-wostools-200: #94D2FE;
+--color-wostools-50: #E4F2FF;
+--color-wostools-tab: #6B9FD8;
+--color-wostools-text-secondary: #97C6F2;
+--color-wostools-alert: #EECE83;
+--color-wostools-menu: #5477AF;
+--color-wostools-red: #A2514C;
+--color-wostools-papper: #FBECED;
+--color-wostools-papper-200: #EBD7C4;
+--color-wostools-papper-500: #906822;
+
+
+  --color-wos-950: #19354D;
+  --color-wos-900: #003463;
+  --color-wos-850: #0D3C70;
+  --color-wos-800: #0D4B88;
+  --color-wos-700: #97C6F2;
+  --color-wos-600: #94D2FE;
+  --color-wos-500: #E4F2FF;
+  --color-wos-400: #4DA5E4;
+  --color-wos-300: #34759F;
+  --color-wos-50: #FFFFFF;
+
+  --font-wos: 'Rowdies', sans-serif;
+
+  --color-wosbutton-y50: #FFCE57;
+  --color-wosbutton-yh50: #E3B445;
+  --color-wosbutton-y100: #FFB810;
+  --color-wosbutton-yh100: #E2A30E;
+  --color-wosbutton-yb: #AE5B3D;
+
+  --color-wosbutton-b50: #54A3ED;
+  --color-wosbutton-bh50: #3C86CC;
+  --color-wosbutton-b100: #3A8AE3;
+  --color-wosbutton-bh100: #347CCD;
+  --color-wosbutton-bb: #06346B;
+
+  --animate-wiggle: slide-in-blurred-bottom 0.6s cubic-bezier(0.230, 1.000, 0.320, 1.000) both;
+
+  @keyframes slide-in-blurred-bottom {
+    0% {
+      transform: translateY(1000px) scaleY(2.5) scaleX(1);
+      transform-origin: 50% 100%;
+      filter: blur(60px);
+      opacity: 0.2;
+    }
+
+    100% {
+      transform: translateY(0) scaleY(1) scaleX(1);
+      transform-origin: 50% 50%;
+      filter: blur(0);
+      opacity: 1;
+    }
+  }
+
 }

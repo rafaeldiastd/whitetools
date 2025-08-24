@@ -1,29 +1,29 @@
-# whitetools
+## Banco de Dados - Supabase
 
-This template should help get you started developing with Vue 3 in Vite.
+## Links
+- id
+- accesskey
+- url
+- created_at
+- title
+- training_time
+- construction_time
+- research_time
 
-## Recommended IDE Setup
+## Players
+- id
+- player_id
+- player_name
+- player_avatar
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Slots
+- id
+- link_id
+- slot_time
+- slot_date
+- is_booked
+- player_id
+- updated_at
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+## Trigger
+Toda vez que eu criar um link novo, ele irá gerar novos 48 horários no Slots, onde slot_time é calculado de 30 em 30 minutos e slot_date é o mesmo do links (training_time, construction_time e research_time) sendo então 144 novos slots 48 para cada. Todos marcados como is_booked false e com um id proprio
