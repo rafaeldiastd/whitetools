@@ -32,7 +32,7 @@ const routes = [
 
 ]
 
-export const router = createRouter({
+ export const router = createRouter({
   history: createWebHistory(),
   routes
 })
