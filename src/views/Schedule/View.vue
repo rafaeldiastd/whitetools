@@ -320,9 +320,9 @@
 const currentTab = ref('construction');
 
 const tabs = [
-    { label: 'Construction', link: 'construction', icon: '/src/assets/images/vp-constr-research.png' },
-    { label: 'Research', link: 'research', icon: '/src/assets/images/vp-constr-research.png' },
-    { label: 'Training', link: 'training', icon: '/src/assets/images/education-training.png' },
+    { label: 'Construction', link: 'construction', icon: '/images/vp-constr-research.png' },
+    { label: 'Research', link: 'research', icon: '/images/vp-constr-research.png' },
+    { label: 'Training', link: 'training', icon: '/images/education-training.png' },
 ];
 
 import Alert from '@/components/Alert.vue';
