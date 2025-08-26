@@ -1,7 +1,9 @@
 <template>
-
-    <div v-if="currentTab === 'construction'" class="p-6 flex flex-col gap-4 pb-[120px]"
+    <div v-if="currentTab === 'construction'" class="p-10 flex flex-col items-center gap-4 pb-[120px]"
         :class="showSignupModal ? 'overflow-hidden' : ''">
+        <a href="/">
+            <img src="@/assets/images/logotipo.png" alt="" class="w-[200px] pb-6">
+        </a>
         <div>
             <div class="flex flex-col rounded-t-xl px-4 py-2 bg-wostools-red gap-4 text-xl text-white">
                 Construction
@@ -42,12 +44,12 @@
             </div>
         </div>
 
-        <div>
+        <div class="w-full">
             <div class="flex flex-col rounded-t-xl p-4 bg-wostools-400 gap-4 text-sm">
                 Slots: {{scheduleStore.slots.construction.filter(slot => slot.is_booked).length}}/{{
                     scheduleStore.slots.construction.length }}
             </div>
-            <div class="flex flex-col gap-2 container bg-wostools-750 p-4 rounded-b-xl">
+            <div class="flex flex-col gap-2 container bg-wostools-750 p-4 rounded-b-xl ">
                 <div v-for="slot in scheduleStore.slots.construction" :key="slot.id" v-if="!scheduleStore.loading"
                     class="relative">
                     <div v-if="scheduleStore.accessGranted && slot.is_booked" @click="removeSlot(slot)"
@@ -85,8 +87,12 @@
             </div>
         </div>
     </div>
-    <div v-if="currentTab === 'research'" class="p-6 flex flex-col gap-4 pb-[120px]"
+    <div v-if="currentTab === 'research'" class="p-10 flex flex-col items-center  gap-4 pb-[120px]"
         :class="showSignupModal ? 'overflow-hidden' : ''">
+        <a href="/">
+            <img src="@/assets/images/logotipo.png" alt="" class="w-[200px] pb-6">
+        </a>
+
         <div>
             <div class="flex flex-col rounded-t-xl px-4 py-2 bg-wostools-red gap-4 text-xl text-white">
                 Research
@@ -127,7 +133,7 @@
             </div>
         </div>
 
-        <div>
+        <div class="w-full">
             <div class="flex flex-col rounded-t-xl p-4 bg-wostools-400 gap-4 text-sm">
                 Slots: {{scheduleStore.slots.research.filter(slot => slot.is_booked).length}}/{{
                     scheduleStore.slots.research.length }}
@@ -164,8 +170,11 @@
             </div>
         </div>
     </div>
-    <div v-if="currentTab === 'training'" class="p-6 flex flex-col gap-4 pb-[120px]"
+    <div v-if="currentTab === 'training'" class="p-10 flex flex-col items-center  gap-4 pb-[120px]"
         :class="showSignupModal ? 'overflow-hidden' : ''">
+        <a href="/">
+            <img src="@/assets/images/logotipo.png" alt="" class="w-[200px] pb-6">
+        </a>
         <div>
             <div class="flex flex-col rounded-t-xl px-4 py-2 bg-wostools-red gap-4 text-xl text-white">
                 Training Troops
@@ -202,7 +211,7 @@
             </div>
         </div>
 
-        <div>
+        <div class="w-full">
             <div class="flex flex-col rounded-t-xl p-4 bg-wostools-400 gap-4 text-sm">
                 Slots: {{scheduleStore.slots.training.filter(slot => slot.is_booked).length}}/{{
                     scheduleStore.slots.training.length }}
@@ -315,6 +324,7 @@
     </div>
 
     <img src="/images/frametop.png" class="fixed bottom-[70px] left-0 z-92"></img>
+
 </template>
 <script setup>
 const currentTab = ref('construction');

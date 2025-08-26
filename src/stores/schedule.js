@@ -16,10 +16,10 @@ export const useScheduleStore = defineStore('schedule', {
     message: null,
     // Estados do realtime
     realtimeEnabled: true,
-    subscriptionStatus: 'disconnected', // disconnected, connecting, connected
+    subscriptionStatus: 'disconnected',
     onlineUsers: [],
     lastUpdate: null,
-    pendingChanges: new Set() // Para evitar loops de updates
+    pendingChanges: new Set()
   }),
 
   getters: {

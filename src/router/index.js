@@ -16,16 +16,16 @@ const routes = [
     component: ScheduleView,
     props: true,
   },
-  {
-    path: '/bearhive/create',
-    name: 'bearhive-create',
-    component: BearHiveCreate,
-  },
-  {
-    path: '/bearhive/view',
-    name: 'bearhive-view',
-    component: BearHiveView,
-  },
+  // {
+  //   path: '/bearhive/create',
+  //   name: 'bearhive-create',
+  //   component: BearHiveCreate,
+  // },
+  // {
+  //   path: '/bearhive/view',
+  //   name: 'bearhive-view',
+  //   component: BearHiveView,
+  // },
   {
     // A rota curinga deve ser a última
     path: '/:pathMatch(.*)*',

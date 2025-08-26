@@ -1,18 +1,21 @@
 <template>
-    <RouterLink v-for="tab in tabs" :key="tab.label" :to="tab.link"
-        class="rounded-t-xl px-6 py-3 hover:cursor-pointer hover:bg-wostools-50 hover:text-wostools-700 flex gap-2 text-sm"
-        :class="$route.path === tab.link
-            ? 'bg-wostools-50 text-wostools-700'
-            : 'bg-wostools-tab text-wostools-50'">
-        <img :src="tab.icon" alt="" class="w-6 h-6">
-        {{ tab.label }}
-    </RouterLink>
-</template>
-<script setup>
-import { RouterLink } from 'vue-router'
+    <img src="/images/frametop.png" class="fixed bottom-[70px] left-0 z-92"></img>
 
+    <div
+        class="flex items-center justify-center fixed z-90 bottom-0 w-full bg-wostools-menu py-2 divide-x divide-wostools-50/10 inset-shadow-sm inset-shadow-wostools-50/20">
+        <div v-for="tab in tabs" :key="tab.label" @click="currentTab = tab.link" class="flex items-center p-2">
+            <div class=" hover:cursor-pointer flex flex-col items-center text-xs px-4"
+                :class="tab.disabled ? 'opacity-50' : ''">
+                <img :src="tab.icon" alt="" class="w-8 h-8">
+                {{ tab.label }}
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
 const tabs = [
     { label: 'Schedule', link: '/', icon: '/images/schedule-icon.png' },
-    { label: 'BearHive', link: '/bearhive/create', icon: '/images/bearspace-icon.png' },
+    { label: 'BearHive', icon: '/images/bearspace-icon.png', disabled: true },
 ];
 </script>

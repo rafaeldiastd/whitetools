@@ -2,17 +2,12 @@
     <div class="flex gap-2 items-center justify-center px-4 pt-4">
         <NavBar />
     </div>
-    <div>
-        <div class="flex flex-col gap-4 mx-4 border-4 border-wostools-50 rounded-xl p-6 bg-wostools-700">
-            <div
-                class="bg-[url(@/assets/images/share-link-schedule.png)] py-3 px-5 rounded-xl min-h-20 bg-cover bg-center flex gap-3 items-center">
-                <img src="@/assets/images/flag.png" alt="">
-                <div class="flex flex-col gap-1 leading-none">
-                    <p class="max-w-40">Share the link with your alliance</p>
-                </div>
-            </div>
-
-            <div v-if="!scheduleStore.linkData">
+    <div class="flex flex-col items-center p-6">
+        <a href="/">
+            <img src="@/assets/images/logotipo.png" alt="" class="w-[200px] pb-6">
+        </a>
+        <div class="flex flex-col gap-4 mx-4 rounded-xl bg-wostools-750 mb-30">
+            <div v-if="!scheduleStore.linkData" class="p-6">
                 <div>
                     <p class="text-wostools-text-secondary text-xs py-4">Easily coordinate alliance events without messy
                         spreadsheets or endless chats. Ensure everyone knows the exact bonus days for construction,
@@ -65,22 +60,22 @@
                 </div>
 
                 <div class="grid grid-cols-6 gap-3 py-4 items-center">
-                    <div class="bg-wostools-800 px-4 py-3 rounded-xl col-span-2 text-center">
+                    <div class="bg-wostools-800 px-4 py-3 rounded-xl col-span-6 text-center truncate">
                         {{ scheduleStore.linkData?.access_key }}
                     </div>
                     <button @click="copyToClipboard(scheduleStore.linkData?.access_key)"
-                        class="col-span-4 rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-bh50 hover:to-wosbutton-bh100 border-wosbutton-bb bg-linear-to-t from-wosbutton-b50 to-wosbutton-b100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-white w-full">
+                        class="col-span-6 rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-bh50 hover:to-wosbutton-bh100 border-wosbutton-bb bg-linear-to-t from-wosbutton-b50 to-wosbutton-b100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-white w-full">
                         <span>Copy key</span>
                     </button>
                     <div class="bg-wostools-800 p-4 rounded-xl col-span-6">
                         {{ scheduleStore.linkData?.generated_link }}
                     </div>
                     <button @click="copyToClipboard(scheduleStore.linkData?.generated_link)"
-                        class="col-span-3 rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-bh50 hover:to-wosbutton-bh100 border-wosbutton-bb bg-linear-to-t from-wosbutton-b50 to-wosbutton-b100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-white w-full">
+                        class="col-span-6 rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-bh50 hover:to-wosbutton-bh100 border-wosbutton-bb bg-linear-to-t from-wosbutton-b50 to-wosbutton-b100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-white w-full">
                         <span>Copy link</span>
                     </button>
                     <a :href="scheduleStore.linkData?.generated_link"
-                        class="col-span-3 text-center rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-bh50 hover:to-wosbutton-bh100 border-wosbutton-bb bg-linear-to-t from-wosbutton-b50 to-wosbutton-b100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-white w-full">
+                        class="col-span-6 text-center rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-bh50 hover:to-wosbutton-bh100 border-wosbutton-bb bg-linear-to-t from-wosbutton-b50 to-wosbutton-b100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-white w-full">
                         <span>Access link</span>
                     </a>
                 </div>
