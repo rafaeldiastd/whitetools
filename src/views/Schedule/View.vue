@@ -260,7 +260,7 @@
         </div>
     </div>
 
-    <Alert v-if="scheduleStore.message" :message="scheduleStore.message" />
+    <Alert v-if="scheduleStore.message || message" :message="scheduleStore.message || message" />
 
     <div v-if="showSignupModal"
         class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-95 ">
@@ -347,12 +347,12 @@ const tabs = [
 ];
 
 import Alert from '@/components/Alert.vue';
-import { copyToClipboard } from '@/services/copyClipboard';
 import { useScheduleStore } from '@/stores/schedule';
 import { onMounted, ref, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
+const message = ref('');
 
 const scheduleStore = useScheduleStore();
 const linkId = ref(route.params.id);
@@ -419,5 +419,16 @@ onMounted(async () => {
         console.log('No cached access found. User will need to enter access key for admin features.');
     }
 });
+
+const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        message.value = 'Copied to clipboard';
+        setTimeout(() => message.value = '', 3000);
+    }).catch(err => {
+        message.value = 'Failed to copy.';
+        setTimeout(() => message.value = '', 3000);
+        console.error('Could not copy text: ', err);
+    });
+};
 
 </script>
