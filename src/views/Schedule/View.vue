@@ -146,22 +146,28 @@
                         <span class="mt-[-5px]">-</span>
                     </div>
                     <div class="rounded-xl py-2 px-4 flex gap-2 min-h-[68px] items-center justify-between"
-                        :class="slot.is_booked ? 'bg-wos-50 text-wos-900' : 'bg-wos-600 text-wos-300'">
-                        <div class="flex gap-3 items-center">
-                            <img v-if="slot.is_booked" :src="slot.players.player_avatar"
-                                class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400">
-                            </img>
-                            <div v-else @click="openModal(slot)"
-                                class="hover:cursor-pointer rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400 text-lime-400 text-2xl font-black">
-                                +
+                        :class="slot.is_booked ? 'bg-wos-50 text-wos-900' : 'bg-wos-600 text-wos-300'"
+                        @click="slot.is_booked && scheduleStore.accessGranted ? copyToClipboard(slot.players.player_id) : null">
+                        <div class="flex gap-3 items-center justify-between w-full">
+                            <div class="flex gap-3 items-center">
+                                <img v-if="slot.is_booked" :src="slot.players.player_avatar"
+                                    class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400">
+                                </img>
+                                <div v-else @click="openModal(slot)"
+                                    class="hover:cursor-pointer rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400 text-lime-400 text-2xl font-black">
+                                    +
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <p class=" font-wos text-xs">
+                                        {{ slot.is_booked ? slot.players.player_name : 'Slot_Empty' }}
+                                    </p>
+                                    <p class="font-wos text-xs">
+                                        {{ slot.start_time }} - {{ slot.end_time }} UTC
+                                    </p>
+                                </div>
                             </div>
-                            <div class="flex flex-col gap-1">
-                                <p class=" font-wos text-xs">
-                                    {{ slot.is_booked ? slot.players.player_name : 'Slot_Empty' }}
-                                </p>
-                                <p class="font-wos text-xs">
-                                    {{ slot.start_time }} - {{ slot.end_time }} UTC
-                                </p>
+                            <div class="text-xs">
+                                {{ slot.players?.player_id }}
                             </div>
                         </div>
                     </div>
@@ -225,21 +231,26 @@
                     </div>
                     <div class="rounded-xl py-2 px-4 flex gap-2 min-h-[68px] items-center justify-between"
                         :class="slot.is_booked ? 'bg-wos-50 text-wos-900' : 'bg-wos-600 text-wos-300'">
-                        <div class="flex gap-3 items-center">
-                            <img v-if="slot.is_booked" :src="slot.players.player_avatar"
-                                class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400">
-                            </img>
-                            <div v-else @click="openModal(slot)"
-                                class="hover:cursor-pointer rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400 text-lime-400 text-2xl font-black">
-                                +
+                        <div class="flex gap-3 items-center justify-between w-full">
+                            <div class="flex gap-3 items-center">
+                                <img v-if="slot.is_booked" :src="slot.players.player_avatar"
+                                    class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400">
+                                </img>
+                                <div v-else @click="openModal(slot)"
+                                    class="hover:cursor-pointer rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400 text-lime-400 text-2xl font-black">
+                                    +
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <p class=" font-wos text-xs">
+                                        {{ slot.is_booked ? slot.players.player_name : 'Slot_Empty' }}
+                                    </p>
+                                    <p class="font-wos text-xs">
+                                        {{ slot.start_time }} - {{ slot.end_time }} UTC
+                                    </p>
+                                </div>
                             </div>
-                            <div class="flex flex-col gap-1">
-                                <p class=" font-wos text-xs">
-                                    {{ slot.is_booked ? slot.players.player_name : 'Slot_Empty' }}
-                                </p>
-                                <p class="font-wos text-xs">
-                                    {{ slot.start_time }} - {{ slot.end_time }} UTC
-                                </p>
+                            <div class="text-xs">
+                                {{ slot.players?.player_id }}
                             </div>
                         </div>
                     </div>
