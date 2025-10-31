@@ -3,6 +3,8 @@ import BearHiveCreate from '../views/BearHive/Create.vue';
 import BearHiveView from '../views/BearHive/View.vue';
 import ScheduleCreate from '../views/Schedule/Create.vue';
 import ScheduleView from '../views/Schedule/View.vue';
+import ListTransferView from '../views/ListTransfer/View.vue';
+import ListTransferCreate from '../views/ListTransfer/Create.vue';
 
 const routes = [
   {
@@ -14,6 +16,18 @@ const routes = [
     path: '/schedule/:id',
     name: 'schedule-view',
     component: ScheduleView,
+    props: true,
+  },
+  {
+    path: '/transfer/:id',
+    name: 'transfer-view',
+    component: ListTransferView,
+    props: true,
+  },
+    {
+    path: '/transfer/create',
+    name: 'transfer-create',
+    component: ListTransferCreate,
     props: true,
   },
   // {

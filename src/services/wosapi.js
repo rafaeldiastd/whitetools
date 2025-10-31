@@ -32,7 +32,10 @@ async function getPlayerInfo(playerId) {
             return {
                 player_name: response.data.data.nickname || 'Unknown Player',
                 photo_url: response.data.data.avatar_image || null,
-                player_id: response.data.data.fid || playerId
+                player_id: response.data.data.fid || playerId,
+                kid: response.data.data.kid || null,
+                stove_lv: response.data.data.stove_lv || null,
+                stove_lv_content: response.data.data.stove_lv_content || null,
             };
         } else {
             console.warn(`API returned unexpected successful response for ID ${playerId}:`, response.data);
