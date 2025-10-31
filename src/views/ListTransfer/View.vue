@@ -78,25 +78,25 @@
                 </button>
             </div>
         </div>
-        <div v-for="(count, allianceName) in transferStore.linkData?.transfer_list_id.alliance_invites"
+        <div v-for="(count, allianceName) in transferStore.currentList?.alliance_invites"
             :key="allianceName" class="w-full flex flex-col bg-wostools-750  rounded-xl">
             <div class="flex justify-between text-wos-200 px-4 py-2 rounded-t-xl bg-wostools-400">
                 <p class="font-wos text-sm">Alliance: {{ allianceName }}</p>
                 <div class="text-xs">
                     Players Invited:
                     <span class="text-xs"
-                        :class="{ 'text-red-500': transferStore.linkData.filter(p => p.alliance_target === allianceName).length > count }">
-                        {{transferStore.linkData.filter(p => p.alliance_target === allianceName).length}}</span> /
+                        :class="{ 'text-red-500': transferStore.currentList.filter(p => p.alliance_target === allianceName).length > count }">
+                        {{transferStore.currentList.filter(p => p.alliance_target === allianceName).length}}</span> /
                     <span>{{ count }}</span>
                 </div>
             </div>
             <div class="flex flex-col gap-2 p-4 ">
-                <div v-for="player in transferStore.linkData.filter(p => p.alliance_target === allianceName)"
+                <div v-for="player in transferStore.currentList.filter(p => p.alliance_target === allianceName)"
                     :key="player.id" class="relative flex flex-col">
                     <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between"
                         :class="{
-                            'bg-wos-50 text-wos-800': player.labyrinth <= transferStore.linkData?.transfer_list_id.requirements.max_labyrinth && player.power <= transferStore.linkData?.transfer_list_id.requirements.max_power,
-                            'bg-red-200 border-red-400 border-4 text-red-900': player.labyrinth > transferStore.linkData?.transfer_list_id.requirements.max_labyrinth || player.power > transferStore.linkData?.transfer_list_id.requirements.max_power
+                            'bg-wos-50 text-wos-800': player.labyrinth <= transferStore.currentList?.requirements.max_labyrinth && player.power <= transferStore.currentList?.requirements.max_power,
+                            'bg-red-200 border-red-400 border-4 text-red-900': player.labyrinth > transferStore.currentList?.requirements.max_labyrinth || player.power > transferStore.currentList?.requirements.max_power
                         }">
                         <div class="col-span-1">
                             <img class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400"
