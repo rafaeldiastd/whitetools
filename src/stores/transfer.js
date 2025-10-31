@@ -106,7 +106,7 @@ export const useTransferStore = defineStore('transfer', {
                 if (data) {
                     // Redireciona para a nova página
                     router.push({
-                        name: 'listtransfer-view',
+                        name: 'transfer-view',
                         params: { id: data.id } // data.id será o 'id' que você inseriu
                     });
                 } else {

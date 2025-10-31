@@ -43,98 +43,82 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap gap-3">
-            <input id="req-id" type="text" v-model="playerData.player_id" placeholder="Player ID"
-                class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
-            </input>
-            <input id="req-power" type="text" v-model="playerData.power" placeholder="Power"
-                class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
-            </input>
-            <input id="req-lab" type="text" v-model="playerData.labyrinth" placeholder="Labyrinth Power"
-                class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
-            </input>
-            <span>
-                {{ allianceName }}
-            </span>
-            <label for="req-target">Who are you inviting?</label>
-            <select id="req-target" v-model="playerData.alliance_target"
-                class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
-                <option value="" disabled>Select alliance target</option>
-                <option v-for="(count, allianceName) in transferStore.linkData[0]?.transfer_list_id.alliance_invites"
-                    :key="allianceName" :value="allianceName">
+        <div class="bg-wos-800 p-4 rounded-xl w-full max-w-2xl flex flex-col gap-4 items-center">
+            <div class="flex flex-col w-full gap-4">
+                <input id="req-id" type="number" v-model="playerData.player_id" placeholder="Player ID"
+                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
+                </input>
+                <input id="req-power" type="text" v-model="powerInput" @focus="onPowerFocus" @blur="onPowerBlur"
+                    placeholder="Power (ex: 10M ou 10000000)"
+                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
+                </input>
+
+                <input id="req-lab" type="number" v-model="playerData.labyrinth" placeholder="Labyrinth"
+                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
+                </input>
+                <span>
                     {{ allianceName }}
-                </option>
-            </select>
-
-            <button @click="transferStore.addPlayer(playerData)" :disabled="loading"
-                class="w-full col-span-3 rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-yh50 hover:to-wosbutton-yh100 border-wosbutton-yb bg-linear-to-t from-wosbutton-y50 to-wosbutton-y100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-wosbutton-yb">
-                <template v-if="loading">
-                    Adding...
-                </template>
-                <template v-else>
-                    Add Player
-                </template>
-            </button>
-
-            {{ playerData.player_id }}
-        </div>
-
-        <div class="w-full">
-            <div class="grid grid-cols-12 gap-2 rounded-t-xl p-4 bg-wostools-400 text-sm justify-between">
-                <span v-for="(count, allianceName) in transferStore.linkData[0]?.transfer_list_id.alliance_invites"
-                    class="col-span-2 w-full flex flex-col justify-between items-center px-2 py-3 bg-wostools-750 rounded-xl gap-2">
-                    <span>{{ allianceName }}</span>
-                    <span>{{ count }}</span>
                 </span>
+                <label for="req-target">Who are you inviting?</label>
+                <select id="req-target" v-model="playerData.alliance_target"
+                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
+                    <option value="" disabled>Select alliance target</option>
+                    <option
+                        v-for="(count, allianceName) in transferStore.linkData[0]?.transfer_list_id.alliance_invites"
+                        :key="allianceName" :value="allianceName">
+                        {{ allianceName }}
+                    </option>
+                </select>
+
+                <button @click="transferStore.addPlayer(playerData)" :disabled="loading"
+                    class="w-full col-span-3 rounded-xl border-b-3 hover:cursor-pointer hover:from-wosbutton-yh50 hover:to-wosbutton-yh100 border-wosbutton-yb bg-linear-to-t from-wosbutton-y50 to-wosbutton-y100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-wosbutton-yb">
+                    <template v-if="loading">
+                        Adding...
+                    </template>
+                    <template v-else>
+                        Add Player
+                    </template>
+                </button>
             </div>
-            <div class="flex flex-col gap-2 container bg-wostools-750 p-4 rounded-b-xl">
-                <div v-for="player in transferStore.linkData" :key="player.id" class="relative">
-                    <div
-                        class="rounded-xl py-2 px-4 flex gap-2 min-h-[68px] items-center justify-between bg-wos-50 text-wos-900">
-                        <div class="flex gap-3 items-center justify-between w-full">
-                            <div class="flex  gap-3 items-center">
-                                <div class="flex flex-col items-center justify-center gap-2">
-                                    <img :src="player.avatar_image"
-                                        class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400">
-                                    </img>
-                                    <img :src="player.stove_lv_content" class="w-8 h-8 m-[-20px]"></img>
-                                </div>
-                                <div class="grid grid-cols-2 gap-1">
-
-                                    <div class="col-span-1 gap-1 flex flex-col">
-                                        <p class=" font-wos text-sm">{{ player.nickname }}</p>
-                                        <p class="font-wos text-xs">ID: {{ player.fid }}</p>
-                                        <p class="font-wos text-xs">State: {{ player.state_id }}</p>
-                                        <p class="font-wos text-xs">Alliance Target: {{ player.alliance_target }}</p>
-                                    </div>
-                                    <div class="col-span-1 gap-2 flex flex-col">
-                                        <p class="font-wos text-xs px-2 py-2 rounded" :class="{
-                                            'bg-green-100 text-green-900': player.labyrinth < transferStore.linkData[0].transfer_list_id.requirements.max_labyrinth,
-                                            'bg-red-200 text-red-900': player.labyrinth > transferStore.linkData[0].transfer_list_id.requirements.max_labyrinth
-                                        }">
-                                            Labyrinth: {{ player.labyrinth }}
-                                        </p>
-                                        <p class="font-wos text-xs px-2 py-2 rounded" :class="{
-                                            'bg-green-100 text-green-900': player.power <= transferStore.linkData[0].transfer_list_id.requirements.max_power,
-                                            'bg-red-200 text-red-900': player.power > transferStore.linkData[0].transfer_list_id.requirements.max_power
-                                        }">
-                                            Current Power: {{ player.power }}
-                                        </p>
-                                    </div>
-
-
-
-
-                                </div>
-                            </div>
+        </div>
+        <div v-for="(count, allianceName) in transferStore.linkData[0]?.transfer_list_id.alliance_invites"
+            :key="allianceName" class="w-full flex flex-col bg-wostools-750  rounded-xl">
+            <div class="flex justify-between text-wos-200 px-4 py-2 rounded-t-xl bg-wostools-400">
+                <p class="font-wos text-sm">Alliance: {{ allianceName }}</p>
+                <div class="text-xs">
+                    Players Invited:
+                    <span class="text-xs"
+                        :class="{ 'text-red-500': transferStore.linkData.filter(p => p.alliance_target === allianceName).length > count }">
+                        {{transferStore.linkData.filter(p => p.alliance_target === allianceName).length}}</span> /
+                    <span>{{ count }}</span>
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 p-4 ">
+                <div v-for="player in transferStore.linkData.filter(p => p.alliance_target === allianceName)"
+                    :key="player.id" class="relative flex flex-col">
+                    <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between"
+                        :class="{
+                            'bg-wos-50 text-wos-800': player.labyrinth <= transferStore.linkData[0]?.transfer_list_id.requirements.max_labyrinth && player.power <= transferStore.linkData[0]?.transfer_list_id.requirements.max_power,
+                            'bg-red-200 border-red-400 border-4 text-red-900': player.labyrinth > transferStore.linkData[0]?.transfer_list_id.requirements.max_labyrinth || player.power > transferStore.linkData[0]?.transfer_list_id.requirements.max_power
+                        }">
+                        <div class="col-span-1">
+                            <img class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400"
+                                :src="player.avatar_image" alt="">
+                        </div>
+                        <div class="col-span-3 flex flex-col justify-center  text-xs">
+                            <p class="font-wos">{{ player.nickname }}</p>
+                            <p class="font-wos">ID: {{ player.fid }}</p>
+                            <p class="font-wos">State: {{ player.state_id }}</p>
+                        </div>
+                        <div class="col-span-2 flex flex-col text-xs">
+                            <p class="font-wos">Labyrinth: {{ player.labyrinth }}</p>
+                            <p class="font-wos">Power: {{ simplifyNumber(player.power) }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
-
 
 
 </template>
@@ -153,11 +137,74 @@ const props = defineProps({
     }
 });
 
+const powerInput = ref('');
+
+const onPowerFocus = () => {
+    // Ao focar, mostre o número real (se existir) para edição
+    if (playerData.value.power) {
+        powerInput.value = playerData.value.power;
+    }
+};
+const onPowerBlur = () => {
+    // Ao sair, parseie o que foi digitado (ex: "10m")
+    const parsedValue = parseSimplifiedNumber(powerInput.value);
+    // Salve o NÚMERO REAL no playerData
+    playerData.value.power = parsedValue;
+    // E formate o input para exibir o texto (ex: "10M")
+    if (parsedValue) {
+        powerInput.value = simplifyNumber(parsedValue);
+    } else {
+        powerInput.value = '';
+    }
+};
 
 // 2. Instanciar a store
 const transferStore = useTransferStore();
 const loading = ref(false);
 
+const numberFormatter = new Intl.NumberFormat('en-US', {
+    notation: 'compact', // Isso faz a mágica: 1,500,000 -> 1.5M
+    maximumFractionDigits: 3 // Define o máximo de casas decimais
+});
+
+// Crie a função que será usada no template
+function simplifyNumber(value) {
+    // Primeiro, converta o valor (que pode ser string) para número
+    const number = parseFloat(value);
+
+    // Se não for um número válido, retorne o valor original
+    if (isNaN(number)) {
+        return value;
+    }
+
+    // Formate o número
+    return numberFormatter.format(number);
+}
+
+function parseSimplifiedNumber(str) {
+    if (!str || typeof str !== 'string') {
+        // Se já for número (do @focus), apenas retorne.
+        if (typeof str === 'number') return str;
+        return null;
+    }
+
+    let value = String(str).toLowerCase().trim();
+    let num = parseFloat(value.replace(/[^0-9.]/g, ''));
+    if (isNaN(num)) return null;
+
+    if (value.endsWith('b')) {
+        return num * 1000000000; // Bilhão
+    }
+    if (value.endsWith('m')) {
+        return num * 1000000; // Milhão
+    }
+    if (value.endsWith('k')) {
+        return num * 1000; // Mil
+    }
+
+    // Se não tiver 'm' ou 'k', retorna o número que foi digitado
+    return num;
+}
 
 onMounted(async () => {
     await transferStore.getTransferInvites(props.id);
