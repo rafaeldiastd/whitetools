@@ -85,13 +85,13 @@
                 <div class="text-xs">
                     Players Invited:
                     <span class="text-xs"
-                        :class="{ 'text-red-500': transferStore.currentList.filter(p => p.alliance_target === allianceName).length > count }">
-                        {{transferStore.currentList.filter(p => p.alliance_target === allianceName).length}}</span> /
+                        :class="{ 'text-red-500': transferStore.currentInvites.filter(p => p.alliance_target === allianceName).length > count }">
+                        {{transferStore.currentInvites.filter(p => p.alliance_target === allianceName).length}}</span> /
                     <span>{{ count }}</span>
                 </div>
             </div>
             <div class="flex flex-col gap-2 p-4 ">
-                <div v-for="player in transferStore.currentList.filter(p => p.alliance_target === allianceName)"
+                <div v-for="player in transferStore.currentInvites.filter(p => p.alliance_target === allianceName)"
                     :key="player.id" class="relative flex flex-col">
                     <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between"
                         :class="{
