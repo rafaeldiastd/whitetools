@@ -1,5 +1,4 @@
 <template>
-    <Alert v-if="transferStore.message || message" :message="transferStore.message || message" />
 
     <div class="p-10 flex flex-col items-center gap-4 pb-[120px]">
 
@@ -25,20 +24,20 @@
                     class="row-span-3 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
                     <div class="flex justify-between items-center py-1">
                         <p>Max Power:</p>
-                        <p>{{ transferStore.linkData[0]?.transfer_list_id.requirements.max_power }}</p>
+                        <p>{{ simplifyNumber(transferStore.currentList?.requirements.max_power) }}</p>
                     </div>
                     <div class="flex justify-between items-center  py-1">
                         <p>Max Labyrinth:</p>
-                        <p>{{ transferStore.linkData[0]?.transfer_list_id.requirements.max_labyrinth }}</p>
+                        <p>{{ transferStore.currentList?.requirements.max_labyrinth }}</p>
                     </div>
                     <div class="flex justify-between items-center py-1">
                         <p>Min Furnace:</p>
-                        <p>{{ transferStore.linkData[0]?.transfer_list_id.requirements.min_furnace_level }}</p>
+                        <p>{{ getFCName(transferStore.currentList?.requirements.min_furnace_level) }}</p>
                     </div>
                 </div>
                 <div
                     class="row-span-2 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
-                    <p>{{ transferStore.linkData[0]?.transfer_list_id.description }}</p>
+                    <p>{{ transferStore.currentList?.description }}</p>
                 </div>
             </div>
         </div>
@@ -56,15 +55,13 @@
                 <input id="req-lab" type="number" v-model="playerData.labyrinth" placeholder="Labyrinth"
                     class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
                 </input>
-                <span>
-                    {{ allianceName }}
-                </span>
+
+
                 <label for="req-target">Who are you inviting?</label>
                 <select id="req-target" v-model="playerData.alliance_target"
                     class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
                     <option value="" disabled>Select alliance target</option>
-                    <option
-                        v-for="(count, allianceName) in transferStore.linkData[0]?.transfer_list_id.alliance_invites"
+                    <option v-for="(count, allianceName) in transferStore.currentList?.alliance_invites"
                         :key="allianceName" :value="allianceName">
                         {{ allianceName }}
                     </option>
@@ -81,7 +78,7 @@
                 </button>
             </div>
         </div>
-        <div v-for="(count, allianceName) in transferStore.linkData[0]?.transfer_list_id.alliance_invites"
+        <div v-for="(count, allianceName) in transferStore.linkData?.transfer_list_id.alliance_invites"
             :key="allianceName" class="w-full flex flex-col bg-wostools-750  rounded-xl">
             <div class="flex justify-between text-wos-200 px-4 py-2 rounded-t-xl bg-wostools-400">
                 <p class="font-wos text-sm">Alliance: {{ allianceName }}</p>
@@ -98,8 +95,8 @@
                     :key="player.id" class="relative flex flex-col">
                     <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between"
                         :class="{
-                            'bg-wos-50 text-wos-800': player.labyrinth <= transferStore.linkData[0]?.transfer_list_id.requirements.max_labyrinth && player.power <= transferStore.linkData[0]?.transfer_list_id.requirements.max_power,
-                            'bg-red-200 border-red-400 border-4 text-red-900': player.labyrinth > transferStore.linkData[0]?.transfer_list_id.requirements.max_labyrinth || player.power > transferStore.linkData[0]?.transfer_list_id.requirements.max_power
+                            'bg-wos-50 text-wos-800': player.labyrinth <= transferStore.linkData?.transfer_list_id.requirements.max_labyrinth && player.power <= transferStore.linkData?.transfer_list_id.requirements.max_power,
+                            'bg-red-200 border-red-400 border-4 text-red-900': player.labyrinth > transferStore.linkData?.transfer_list_id.requirements.max_labyrinth || player.power > transferStore.linkData?.transfer_list_id.requirements.max_power
                         }">
                         <div class="col-span-1">
                             <img class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400"
@@ -204,6 +201,21 @@ function parseSimplifiedNumber(str) {
 
     // Se não tiver 'm' ou 'k', retorna o número que foi digitado
     return num;
+}
+
+function getFCName(stove_lv) {
+    const level = Number(stove_lv);
+
+    if (level >= 31 && level <= 35) return 'FC1';
+    if (level >= 36 && level <= 40) return 'FC2';
+    if (level >= 41 && level <= 45) return 'FC3';
+    if (level >= 46 && level <= 50) return 'FC4';
+    if (level >= 51 && level <= 55) return 'FC5';
+    if (level >= 56 && level <= 60) return 'FC6';
+    if (level >= 61 && level <= 65) return 'FC7';
+    if (level >= 66 && level <= 70) return 'FC8';
+
+    return 'N/A';
 }
 
 onMounted(async () => {

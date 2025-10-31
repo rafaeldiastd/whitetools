@@ -18,9 +18,11 @@ export const useTransferStore = defineStore('transfer', {
             }
         },
         // Você precisa do state completo para a store funcionar
-        linkData: [],
         loading: false,
         message: null,
+
+        currentList: null, // Para guardar os detalhes da lista (título, ID, requisitos)
+        currentInvites: [], // Para guardar a lista de jogadores (o que era seu linkData)
     }),
 
     getters: {
@@ -125,25 +127,45 @@ export const useTransferStore = defineStore('transfer', {
         async getTransferInvites(listid) {
             this.loading = true;
             this.message = null;
-            this.linkData = [];
+            this.currentList = null;    // Reseta os dados
+            this.currentInvites = [];   // Reseta os dados
 
             try {
+                // 1. Busca o "PAI" (a lista) e pede os "FILHOS" (os invites)
                 const { data, error } = await supabase
-                    .from('transfer_invites')
-                    // A query correta para join é uma string única:
-                    .select('*, transfer_list_id(*)')
-                    .eq('transfer_list_id', listid);
+                    .from('transfer_lists') // <-- Tabela principal
+                    .select(`
+                *,
+                transfer_invites(*)
+            `) // <-- Pede os detalhes da lista E os invites relacionados
+                    .eq('id', listid) // Filtra pelo ID da lista
+                    .single(); // Esperamos APENAS um resultado
 
-                if (error) throw error;
+                if (error) {
+                    // Se o erro for 'PGRST116', significa que a lista não foi encontrada
+                    if (error.code === 'PGRST116') {
+                        throw new Error('Lista de transferência não encontrada.');
+                    }
+                    throw error;
+                }
 
                 if (data) {
-                    this.linkData = data; // 'data' agora é um ARRAY [ {..}, {..} ]
+                    // 'data' agora é o objeto da lista completa
+                    // Ex: { id: '...', title: '...', requirements: {...}, transfer_invites: [...] }
+
+                    // Separa os dados no state
+                    const { transfer_invites, ...listDetails } = data;
+
+                    this.currentList = listDetails; // Guarda os detalhes da lista
+                    this.currentInvites = transfer_invites; // Guarda os convites (pode ser [])
+
                 } else {
-                    throw new Error('Nenhum convite encontrado para esta lista.');
+                    // Isso não deve acontecer se o .single() funcionar, mas é uma boa checagem
+                    throw new Error('Lista de transferência não encontrada.');
                 }
 
             } catch (error) {
-                console.error('Erro ao buscar convites:', error);
+                console.error('Erro ao buscar dados da lista:', error);
                 this.showMessage(error.message || 'Lista não encontrada.');
             } finally {
                 this.loading = false;
@@ -167,14 +189,20 @@ export const useTransferStore = defineStore('transfer', {
             }, 3000);
         },
 
+        // Sua ação addPlayer está quase correta, mas ela não atualiza o state.
+        // Você pode adicionar o novo jogador manualmente ou apenas recarregar a lista.
         async addPlayer(playerData) {
+            this.loading = true; // Adicionado
             const dataWOS = await getPlayerInfo(playerData.player_id)
 
-            console.log(dataWOS);
             if (!dataWOS) {
                 this.showMessage('Player not found or error fetching data.');
+                this.loading = false; // Adicionado
                 return;
-            } else {
+            }
+
+            // O 'try...catch' é uma boa prática aqui
+            try {
                 const { data, error } = await supabase
                     .from('transfer_invites')
                     .insert([
@@ -193,6 +221,20 @@ export const useTransferStore = defineStore('transfer', {
                     ])
                     .select()
                     .single();
+
+                if (error) throw error;
+
+                // Se funcionou, adiciona o novo jogador à lista local
+                if (data) {
+                    this.currentInvites.push(data);
+                    this.showMessage('Player adicionado!');
+                }
+
+            } catch (error) {
+                console.error('Erro ao adicionar jogador:', error);
+                this.showMessage(error.message || 'Erro ao salvar jogador.');
+            } finally {
+                this.loading = false;
             }
         }
     }
