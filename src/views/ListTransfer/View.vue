@@ -96,7 +96,7 @@
                     <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between bg-wos-50 text-wos-800 "
                         >
                         <div class="col-span-1 flex flex-col items-center justify-center gap-[-10px]">
-                            <img class="rounded-xl w-[50px] h-[50px] object-fit flex items-center justify-center bg-wos-400"
+                            <img class="rounded-xl w-[50px] h-full object-fit flex items-center justify-center bg-wos-400"
                                 :src="player.avatar_image" alt="">
                                 <img :src="player.stove_lv_content" class="h-7 w-7 mt-[-10px]"  alt="">
                         </div>
