@@ -91,25 +91,34 @@
                 </div>
             </div>
             <div class="flex flex-col gap-2 p-4 ">
-                <div v-for="player in transferStore.currentInvites.filter(p => p.alliance_target === allianceName)"
+                <div v-for="player in transferStore.currentInvites.filter(p => p.alliance_target === allianceName).sort((a, b) => b.labyrinth - a.labyrinth)"
                     :key="player.id" class="relative flex flex-col">
-                    <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between"
-                        :class="{
-                            'bg-wos-50 text-wos-800': player.labyrinth <= transferStore.currentList?.requirements.max_labyrinth && player.power <= transferStore.currentList?.requirements.max_power,
-                            'bg-red-200 border-red-400 border-4 text-red-900': player.labyrinth > transferStore.currentList?.requirements.max_labyrinth || player.power > transferStore.currentList?.requirements.max_power
-                        }">
-                        <div class="col-span-1">
+                    <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between bg-wos-50 text-wos-800 "
+                        >
+                        <div class="col-span-1 flex flex-col items-center justify-center gap-[-10px]">
                             <img class="rounded-xl w-[50px] h-[50px] flex items-center justify-center bg-wos-400"
                                 :src="player.avatar_image" alt="">
+                                <img :src="player.stove_lv_content" class="h-7 w-7 mt-[-10px]"  alt="">
                         </div>
+                        
                         <div class="col-span-3 flex flex-col justify-center  text-xs">
                             <p class="font-wos">{{ player.nickname }}</p>
                             <p class="font-wos">ID: {{ player.fid }}</p>
                             <p class="font-wos">State: {{ player.state_id }}</p>
                         </div>
                         <div class="col-span-2 flex flex-col text-xs">
-                            <p class="font-wos">Labyrinth: {{ player.labyrinth }}</p>
-                            <p class="font-wos">Power: {{ simplifyNumber(player.power) }}</p>
+                            <p class="font-wos"
+                            :class="{
+                                'bg-red-300 rounded px-1 pw-2  w-fit' : player.labyrinth >= transferStore.currentList?.requirements.max_labyrinth,
+                            }">Labyrinth: {{ player.labyrinth }}</p>
+                            <p class="font-wos"
+                            :class="{
+                                'bg-red-300 rounded px-1 pw-2  w-fit' : player.power >= transferStore.currentList?.requirements.max_power,
+                            }">Power: {{ simplifyNumber(player.power) }}</p>
+                            <p class="font-wos"
+                            :class="{
+                                'bg-orange-300 rounded px-1 pw-2 w-fit' : player.stove_lv <= (transferStore.currentList?.requirements.min_furnace_level - 1),
+                            }">Furnace: {{ getFCName(player.stove_lv) }}</p>
                         </div>
                     </div>
                 </div>
@@ -124,7 +133,6 @@
 import { ref } from 'vue';
 import { useTransferStore } from '@/stores/transfer';
 import { onMounted } from 'vue';
-import Alert from '@/components/Alert.vue';
 
 const props = defineProps({
     id: {
