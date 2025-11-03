@@ -14,7 +14,7 @@
                 class="grid grid-cols-2 grid-rows-5 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-2">
                 <div
                     class="row-span-5 col-span-1 bg-red-200 rounded-xl bg-no-repeat bg-cover bg-[url(/images/share-link-schedule.png)] p-4 flex flex-col justify-center h-full">
-                    <img class="w-8 h-8" src="/images/flag.png" alt="">
+                    <img class="w-8 h-8" src="/images/flag.png" alt="" @click="admin = true">
                     <p class="text-xl"> </p>
                     <div class="flex flex-col gap-1 leading-none">
                         <p class="text-sm font-light">Add the players you would like to invite</p>
@@ -78,8 +78,8 @@
                 </button>
             </div>
         </div>
-        <div v-for="(count, allianceName) in transferStore.currentList?.alliance_invites"
-            :key="allianceName" class="w-full flex flex-col bg-wostools-750  rounded-xl">
+        <div v-for="(count, allianceName) in transferStore.currentList?.alliance_invites" :key="allianceName"
+            class="w-full flex flex-col bg-wostools-750  rounded-xl">
             <div class="flex justify-between text-wos-200 px-4 py-2 rounded-t-xl bg-wostools-400">
                 <p class="font-wos text-sm">Alliance: {{ allianceName }}</p>
                 <div class="text-xs">
@@ -93,32 +93,34 @@
             <div class="flex flex-col gap-2 p-4 ">
                 <div v-for="player in transferStore.currentInvites.filter(p => p.alliance_target === allianceName).sort((a, b) => b.labyrinth - a.labyrinth)"
                     :key="player.id" class="relative flex flex-col">
-                    <div class="grid grid-cols-6 rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between bg-wos-50 text-wos-800 "
-                        >
+                    <div class="grid rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between bg-wos-50 text-wos-800"
+                        :class="{ 'grid-cols-8': admin === true, 'grid-cols-6': admin === false }">
                         <div class="col-span-1 flex flex-col items-center justify-center gap-[-10px]">
                             <img class="rounded-xl w-[50px] h-full object-fit flex items-center justify-center bg-wos-400"
                                 :src="player.avatar_image" alt="">
-                                <img :src="player.stove_lv_content" class="h-7 w-7 mt-[-10px]"  alt="">
+                            <img :src="player.stove_lv_content" class="h-7 w-7 mt-[-10px]" alt="">
                         </div>
-                        
                         <div class="col-span-3 flex flex-col justify-center  text-xs">
                             <p class="font-wos">{{ player.nickname }}</p>
                             <p class="font-wos">ID: {{ player.fid }}</p>
                             <p class="font-wos">State: {{ player.state_id }}</p>
                         </div>
                         <div class="col-span-2 flex flex-col text-xs">
-                            <p class="font-wos"
-                            :class="{
-                                'bg-red-300 rounded px-1 pw-2  w-fit' : player.labyrinth >= transferStore.currentList?.requirements.max_labyrinth,
+                            <p class="font-wos" :class="{
+                                'bg-red-300 rounded px-1 pw-2  w-fit': player.labyrinth >= transferStore.currentList?.requirements.max_labyrinth,
                             }">Labyrinth: {{ player.labyrinth }}</p>
-                            <p class="font-wos"
-                            :class="{
-                                'bg-red-300 rounded px-1 pw-2  w-fit' : player.power >= transferStore.currentList?.requirements.max_power,
+                            <p class="font-wos" :class="{
+                                'bg-red-300 rounded px-1 pw-2  w-fit': player.power >= transferStore.currentList?.requirements.max_power,
                             }">Power: {{ simplifyNumber(player.power) }}</p>
-                            <p class="font-wos"
-                            :class="{
-                                'bg-orange-300 rounded px-1 pw-2 w-fit' : player.stove_lv <= (transferStore.currentList?.requirements.min_furnace_level - 1),
+                            <p class="font-wos" :class="{
+                                'bg-orange-300 rounded px-1 pw-2 w-fit': player.stove_lv <= (transferStore.currentList?.requirements.min_furnace_level - 1),
                             }">Furnace: {{ getFCName(player.stove_lv) }}</p>
+                        </div>
+                        <div v-if="admin === true" class="col-span-2 items-center justify-center flex">
+                            <span @click="transferStore.removePlayer(player.fid, transferStore.currentList.id)"
+                                class="text-xs underline text-red-600 hover:cursor-pointer">
+                                Remove
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -141,6 +143,8 @@ const props = defineProps({
         default: null
     }
 });
+
+const admin = ref(false); // Defina se o usuário é admin ou não
 
 const powerInput = ref('');
 
@@ -214,14 +218,13 @@ function parseSimplifiedNumber(str) {
 function getFCName(stove_lv) {
     const level = Number(stove_lv);
 
-    if (level >= 31 && level <= 35) return 'FC1';
-    if (level >= 36 && level <= 40) return 'FC2';
-    if (level >= 41 && level <= 45) return 'FC3';
-    if (level >= 46 && level <= 50) return 'FC4';
-    if (level >= 51 && level <= 55) return 'FC5';
-    if (level >= 56 && level <= 60) return 'FC6';
-    if (level >= 61 && level <= 65) return 'FC7';
-    if (level >= 66 && level <= 70) return 'FC8';
+    if (level >= 34 && level <= 39) return 'FC1';
+    if (level >= 40 && level <= 44) return 'FC2';
+    if (level >= 45 && level <= 49) return 'FC3';
+    if (level >= 50 && level <= 54) return 'FC4';
+    if (level >= 55 && level <= 59) return 'FC5';
+    if (level >= 60 && level <= 64) return 'FC6';
+    if (level >= 65 && level <= 69) return 'FC7';
 
     return 'N/A';
 }

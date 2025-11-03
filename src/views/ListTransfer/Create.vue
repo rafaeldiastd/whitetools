@@ -199,7 +199,6 @@ const onPowerBlur = () => {
 
 // --- Lógica dos Convites (Alliance Invites) ---
 function addInvite() {
-    transferStore.showMessage('New Invite added!');
     transferStore.newTransferData.alliance_invites.push({ tag: '', spots: null });
 }
 
