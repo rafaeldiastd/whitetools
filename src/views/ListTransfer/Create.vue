@@ -1,8 +1,19 @@
 <template>
+    <div class="flex gap-2 items-center justify-center px-4 pt-4">
+        <NavBar />
+    </div>
     <div class="flex flex-col items-center p-6">
-        <div class="flex flex-col gap-4 p-4 mx-4 rounded-xl bg-wostools-750 mb-30 w-full max-w-sm">
+        <a href="/">
+            <img src="@/assets/images/logotipo.png" alt="" class="w-[200px] pb-6">
+        </a>
+        <div class="flex flex-col gap-4 mx-4 rounded-xl bg-wostools-750 mb-30 p-6">
+            <div>
+                <p class="text-wostools-text-secondary text-xs py-4">So that the transfer minister and the State can
+                    organize the invitations, you can create a link to share with them. Fill in a title, description,
+                    add each alliance and its number of invitations (seats) and enter the requirements to receive an
+                    invitation</p>
+            </div>
             <div class="grid gap-4 grid-cols-4">
-
                 <div class="flex flex-col gap-1 col-span-4">
                     <label class="text-sm" for="linkTitle">Title</label>
                     <input id="linkTitle" type="text" v-model="transferStore.newTransferData.title"
@@ -20,12 +31,13 @@
                     <div v-for="(invite, index) in transferStore.newTransferData.alliance_invites" :key="index"
                         class="col-span-4 grid grid-cols-12 gap-2 items-center">
                         <input type="text" v-model="invite.tag" placeholder="TAG" maxlength="3"
-                            class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm col-span-5 uppercase">
+                            class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm col-span-5 uppercase"
+                            required>
                         <input type="number" v-model="invite.spots" placeholder="Spots"
-                            class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm col-span-5">
+                            class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm col-span-5" required>
                         <button @click="removeInvite(index)"
-                            class="col-span-2 text-center text-red-100 hover:cursor-pointer bg-wostools-red py-3 rounded-xl text-xs">
-                            Delete
+                            class="w-full h-full col-span-2 rounded-xl border-b-3 hover:cursor-pointer hover:from-red-600 hover:to-red-800 border-red-900 bg-linear-to-t from-red-500 to-red-700 shadow-md inset-shadow-sm inset-shadow-white/60 text-red-200 text-2xl">
+                            -
                         </button>
                     </div>
                     <button @click="addInvite"
@@ -44,13 +56,13 @@
                         <label class="text-sm text-wos-100" for="req-lab">Max Labyrinth</label>
                         <input id="req-lab" type="number" placeholder="e.g.: 1450"
                             v-model.number="transferStore.newTransferData.requirements.max_labyrinth"
-                            class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm">
+                            class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm" required>
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-sm text-wos-100" for="req-power">Max Power</label>
                         <input id="req-power" type="text" v-model="powerInput" @focus="onPowerFocus" @blur="onPowerBlur"
                             placeholder="e.g.: 10M, 12.3M or 10000000"
-                            class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm">
+                            class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm" required>
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-sm text-wos-100" for="req-furnace">Min Furnace Level</label>
@@ -76,13 +88,17 @@
                 </template>
             </button>
         </div>
-
     </div>
 </template>
 
 <script setup>
+import NavBar from '@/components/NavBar.vue';
 import { ref } from 'vue'; // Importe o 'ref'
 import { useTransferStore } from '@/stores/transfer.js';
+
+// 1. Instanciar a store (apenas uma vez)
+const transferStore = useTransferStore();
+
 
 // Array para preencher as opções da Fornalha
 const furnaceOptions = [
@@ -97,7 +113,6 @@ const numCamps = 8;   // De FC1 a FC7
 for (let i = 0; i < numCamps; i++) {
     const campNumber = i + 1;
     const startLevel = baseLevel + (i * 5); // 31, 36, 41...
-    const endLevel = startLevel + 4;       // 35, 40, 45...
 
     furnaceOptions.push({
         text: `FC${campNumber}`,
@@ -105,8 +120,6 @@ for (let i = 0; i < numCamps; i++) {
     });
 }
 
-// 1. Instanciar a store (apenas uma vez)
-const transferStore = useTransferStore();
 
 // --- Funções de Formatação (copiadas da sua implementação) ---
 
@@ -185,8 +198,8 @@ const onPowerBlur = () => {
 
 
 // --- Lógica dos Convites (Alliance Invites) ---
-
 function addInvite() {
+    transferStore.showMessage('New Invite added!');
     transferStore.newTransferData.alliance_invites.push({ tag: '', spots: null });
 }
 

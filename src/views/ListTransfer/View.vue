@@ -45,15 +45,15 @@
         <div class="bg-wos-800 p-4 rounded-xl w-full max-w-2xl flex flex-col gap-4 items-center">
             <div class="flex flex-col w-full gap-4">
                 <input id="req-id" type="number" v-model="playerData.player_id" placeholder="Player ID"
-                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
+                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm" required>
                 </input>
                 <input id="req-power" type="text" v-model="powerInput" @focus="onPowerFocus" @blur="onPowerBlur"
                     placeholder="Power (ex: 10M ou 10000000)"
-                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
+                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm" required>
                 </input>
 
                 <input id="req-lab" type="number" v-model="playerData.labyrinth" placeholder="Labyrinth"
-                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm">
+                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm" required>
                 </input>
 
 

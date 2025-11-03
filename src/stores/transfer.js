@@ -182,12 +182,6 @@ export const useTransferStore = defineStore('transfer', {
             return code;
         },
 
-        showMessage(messageSend) {
-            this.message = messageSend;
-            setTimeout(() => {
-                this.message = null;
-            }, 3000);
-        },
 
         // Sua ação addPlayer está quase correta, mas ela não atualiza o state.
         // Você pode adicionar o novo jogador manualmente ou apenas recarregar a lista.
@@ -221,18 +215,19 @@ export const useTransferStore = defineStore('transfer', {
                     ])
                     .select()
                     .single();
-
                 if (error) throw error;
 
                 // Se funcionou, adiciona o novo jogador à lista local
                 if (data) {
                     this.currentInvites.push(data);
-                    this.showMessage('Player adicionado!');
+                    router.push({
+                        name: 'transfer-view',
+                        params: { id: playerData.transfer_list_id }
+                    });
                 }
 
             } catch (error) {
-                console.error('Erro ao adicionar jogador:', error);
-                this.showMessage(error.message || 'Erro ao salvar jogador.');
+                showMessage('Erro ao adicionar jogador.');
             } finally {
                 this.loading = false;
             }
