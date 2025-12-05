@@ -37,6 +37,33 @@ export const useScheduleStore = defineStore('schedule', {
   },
 
   actions: {
+    showMessage(payloadOrText, type = 'info', duration = 5000) {
+      let messageText = '';
+      let messageType = type;
+      let messageDuration = duration;
+
+      if (typeof payloadOrText === 'object' && payloadOrText !== null) {
+        messageText = payloadOrText.text;
+        messageType = payloadOrText.type || 'info';
+        messageDuration = payloadOrText.duration || 5000;
+      } else {
+        messageText = payloadOrText;
+      }
+
+      this.message = { text: messageText, type: messageType };
+
+      if (messageDuration) {
+        setTimeout(() => {
+          this.clearMessage();
+        }, messageDuration);
+      }
+    },
+
+    clearMessage() {
+      this.message = { text: null, type: 'info' };
+    },
+
+
 
     saveAccessToCache(linkId, accessKey) {
       try {
