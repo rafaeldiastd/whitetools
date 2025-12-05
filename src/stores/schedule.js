@@ -13,7 +13,7 @@ export const useScheduleStore = defineStore('schedule', {
       research: []
     },
     linkData: null,
-    message: null,
+    message: { text: null, type: 'info' },
     // Estados do realtime
     realtimeEnabled: true,
     subscriptionStatus: 'disconnected',
@@ -221,78 +221,47 @@ export const useScheduleStore = defineStore('schedule', {
           return 'research';
         }
       }
-
       return null;
     },
 
-    checkPlayerExistsInSlotType(playerId, slotType) {
-
-      const exists = this.slots[slotType].some(slot => {
-        if (slot.players && slot.players.player_id) {
-          // Converte ambos para string para garantir comparação correta
-          return String(slot.players.player_id) === String(playerId);
-        }
-        return false;
-      });
-      return exists;
-    },
-
-    showMessage(messageSend) {
-      this.message = messageSend;
-      setTimeout(() => {
-        this.message = null;
-      }, 2000);
-
-    },
-
-    updateLocalSlot(updatedSlot) {
-      let slotType = null;
-      for (const type in this.slots) {
-        if (this.slots[type].some(s => s.id === updatedSlot.id)) {
-          slotType = type;
-          break;
-        }
-      }
-      if (slotType) {
-        const index = this.slots[slotType].findIndex(s => s.id === updatedSlot.id);
-        if (index !== -1) {
-          this.slots[slotType][index] = updatedSlot;
-        }
-      }
-    },
-
     async createLinkSchedule(newLinkData) {
-      const id = this.generateUniqueCode();
+      this.loading = true;
       try {
+        const accessKey = this.generateUniqueCode(6);
+
         const { data, error } = await supabase
           .from('links')
           .insert([
             {
-              id: id,
-              access_key: this.generateUniqueCode(),
+              access_key: accessKey,
               description: newLinkData.description,
               title: newLinkData.title,
               training_time: newLinkData.training_time,
               construction_time: newLinkData.construction_time,
-              research_time: newLinkData.research_time,
-              generated_link: `${window.location.origin}/schedule/${id}`
+              research_time: newLinkData.research_time
             }
           ])
-          .select();
+          .select()
+          .single();
 
         if (error) {
           throw error;
         }
 
-        // Corrigido: Pegue o primeiro item do array retornado e atribua ao linkData
-        if (data && data.length > 0) {
-          this.linkData = data[0];
-        } else {
-          this.linkData = null; // Caso a inserção não retorne dados, zera o estado
+        if (data) {
+          this.linkData = {
+            ...data,
+            generated_link: `${window.location.origin}/schedule/${data.id}`
+          };
+          this.showMessage({ text: 'Link created successfully!', type: 'success' });
         }
 
       } catch (error) {
+        console.error('Error creating link:', error);
+        this.showMessage({ text: 'Error creating link', type: 'error' });
         throw error;
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -545,6 +514,32 @@ export const useScheduleStore = defineStore('schedule', {
       }
     },
 
+    checkPlayerExistsInSlotType(playerId, slotType) {
+      const exists = this.slots[slotType].some(slot => {
+        if (slot.players && slot.players.player_id) {
+          return String(slot.players.player_id) === String(playerId);
+        }
+        return false;
+      });
+      return exists;
+    },
+
+    updateLocalSlot(updatedSlot) {
+      let slotType = null;
+      for (const type in this.slots) {
+        if (this.slots[type].some(s => s.id === updatedSlot.id)) {
+          slotType = type;
+          break;
+        }
+      }
+      if (slotType) {
+        const index = this.slots[slotType].findIndex(s => s.id === updatedSlot.id);
+        if (index !== -1) {
+          this.slots[slotType][index] = updatedSlot;
+        }
+      }
+    },
+
     // Remover slot localmente
     removeLocalSlot(slotId) {
       for (const slotType of ['training', 'construction', 'research']) {
@@ -556,41 +551,30 @@ export const useScheduleStore = defineStore('schedule', {
       }
     },
 
-    // Método signUpPlayer atualizado
     async signUpPlayer(slot, playerId) {
       try {
-        // Adicionar à lista de mudanças pendentes
         this.pendingChanges.add(slot.id)
 
-        // Sua lógica existente de validação e API calls...
         const slotType = this.getSlotType(slot)
-        if (!slotType) {
-          throw new Error('Unable to determine slot type')
-        }
+        if (!slotType) throw new Error('Unable to determine slot type')
 
         const playerExists = this.checkPlayerExistsInSlotType(playerId, slotType)
-        if (playerExists) {
-          throw new Error(`Player is already signed up for a ${slotType} slot`)
-        }
+        if (playerExists) throw new Error(`Player is already signed up for a ${slotType} slot`)
 
+        if (slot.is_booked) throw new Error('This slot is already booked by another player.')
 
-        // Se o slot já tem um player_id, significa que outro usuário já o reservou.
-        // Esta verificação evita o sobrescrevemento.
-        if (slot.is_booked) {
-          throw new Error('This slot is already booked by another player.');
-        }
         const playerInfo = await getPlayerInfo(playerId)
-        const { data: playerData, error: playerError } = await supabase
+        if (!playerInfo) throw new Error('Player not found. Please check the ID.')
+
+        const { error: playerError } = await supabase
           .from('players')
           .upsert([{
             player_id: playerInfo.player_id,
             player_name: playerInfo.player_name,
             player_avatar: playerInfo.photo_url
-          }], {
-            onConflict: 'player_id',
-            ignoreDuplicates: false
-          })
-          .select()
+          }], { onConflict: 'player_id', ignoreDuplicates: false })
+
+        if (playerError) throw playerError
 
         const { data: updatedSlot, error: slotError } = await supabase
           .from('slots')
@@ -604,31 +588,22 @@ export const useScheduleStore = defineStore('schedule', {
           .select('*, players(player_name, player_avatar, player_id)')
           .single()
 
+        if (slotError) throw slotError
+
         if (updatedSlot) {
-          // Atualizar localmente (o realtime vai notificar outros usuários automaticamente)
           this.updateLocalSlot(updatedSlot)
-          this.showMessage('Player signed up successfully!')
-
-          // Remover da lista de mudanças pendentes após um delay
-          setTimeout(() => {
-            this.pendingChanges.delete(slot.id)
-          }, 1000)
-
+          this.showMessage('Player signed up successfully!', 'success')
+          setTimeout(() => this.pendingChanges.delete(slot.id), 1000)
           return { success: true, slot: updatedSlot }
-        }
-
-        if (slotError) {
-          throw slotError;
         }
 
       } catch (error) {
         this.pendingChanges.delete(slot.id)
-        this.showMessage('Error signing up player')
+        this.showMessage(error.message || 'Error signing up player', 'error')
         return { success: false, error }
       }
     },
 
-    // Método removePlayer atualizado
     async removePlayer(slot) {
       try {
         this.pendingChanges.add(slot.id)
@@ -649,18 +624,14 @@ export const useScheduleStore = defineStore('schedule', {
         if (updatedSlot) {
           const slotWithoutPlayer = { ...updatedSlot, players: null }
           this.updateLocalSlot(slotWithoutPlayer)
-          this.showMessage('Player removed successfully!')
-
-          setTimeout(() => {
-            this.pendingChanges.delete(slot.id)
-          }, 1000)
-
+          this.showMessage('Player removed successfully!', 'success')
+          setTimeout(() => this.pendingChanges.delete(slot.id), 1000)
           return { success: true, slot: updatedSlot }
         }
 
       } catch (error) {
         this.pendingChanges.delete(slot.id)
-        this.showMessage('Error removing player')
+        this.showMessage('Error removing player', 'error')
         return { success: false, error }
       }
     },

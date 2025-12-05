@@ -20,8 +20,9 @@ export const useTransferStore = defineStore('transfer', {
   state: () => ({
     newTransferData: getInitialNewData(),
     loading: false,
-    // Mensagem agora é um objeto para suportar tipos (error, success, info)
     message: { text: null, type: 'info' },
+    linkData: null, // Stores the created link data (id, access_key, etc.)
+    accessGranted: false, // Controls admin access
 
     currentList: null, // Para guardar os detalhes da lista (título, ID, requisitos)
     currentInvites: [], // Para guardar a lista de jogadores
@@ -30,18 +31,14 @@ export const useTransferStore = defineStore('transfer', {
   getters: {
     isLoading: (state) => state.loading,
     getMessage: (state) => state.message,
+    isAdmin: (state) => state.accessGranted,
   },
 
   actions: {
     // --- AÇÕES DE MENSAGEM ---
-    /**
-     * Define uma mensagem de feedback para o usuário.
-     * @param {object} payload - { text, type = 'error', duration = 5000 }
-     */
     showMessage({ text, type = 'error', duration = 5000 }) {
       this.message = { text, type };
-      
-      // Limpa a mensagem após 'duration' milissegundos
+
       if (duration) {
         setTimeout(() => {
           this.clearMessage();
@@ -49,9 +46,6 @@ export const useTransferStore = defineStore('transfer', {
       }
     },
 
-    /**
-     * Limpa a mensagem de feedback.
-     */
     clearMessage() {
       this.message = { text: null, type: 'info' };
     },
@@ -68,19 +62,19 @@ export const useTransferStore = defineStore('transfer', {
     },
 
     resetNewData() {
-      // CORRIGIDO: Usa a função helper para garantir consistência
       this.newTransferData = getInitialNewData();
+      this.linkData = null;
     },
 
     // --- AÇÕES ASYNC (BANCO DE DADOS) ---
 
     async createTransferLink() {
       this.loading = true;
-      this.clearMessage(); // CORRIGIDO: Usa a nova action
+      this.clearMessage();
       const id = this.generateUniqueCode(8);
+      const accessKey = this.generateUniqueCode(6);
 
       try {
-        // --- 1. Processar Payloads ---
         const invitesPayload = this.newTransferData.alliance_invites.reduce((acc, invite) => {
           if (invite.tag && (invite.spots !== null && invite.spots !== '')) {
             acc[invite.tag.toUpperCase()] = Number(invite.spots);
@@ -96,7 +90,6 @@ export const useTransferStore = defineStore('transfer', {
           }
         }
 
-        // --- 2. Insere na tabela 'transfer_lists' ---
         const { data, error } = await supabase
           .from('transfer_lists')
           .insert([
@@ -106,12 +99,12 @@ export const useTransferStore = defineStore('transfer', {
               description: this.newTransferData.description,
               alliance_invites: invitesPayload,
               requirements: requirementsPayload,
+              access_key: accessKey,
             }
           ])
           .select()
           .single();
 
-        // --- 3. Tratamento de Erro e Redirecionamento ---
         if (error) {
           if (error.code === '23505') {
             console.warn('Slug collision detected, retrying...');
@@ -121,20 +114,19 @@ export const useTransferStore = defineStore('transfer', {
         }
 
         if (data) {
-          // Redireciona para a nova página
-          router.push({
-            name: 'transfer-view',
-            params: { id: data.id }
-          });
+          this.linkData = {
+            ...data,
+            generated_link: `${window.location.origin}/transfer/${data.id}`,
+            access_key: accessKey
+          };
+          this.showMessage({ text: 'Link created successfully!', type: 'success' });
         } else {
-          throw new Error("Criação falhou, mas nenhum erro foi retornado.");
+          throw new Error("Creation failed but no error was returned.");
         }
 
       } catch (error) {
-        console.error('Erro ao criar lista de transferência:', error);
-        // CORRIGIDO: Usa a nova action
-        this.showMessage({ text: error.message || 'Erro ao criar a lista.' });
-        // REMOVIDO: this.linkData = []; (não existe no state)
+        console.error('Error creating transfer list:', error);
+        this.showMessage({ text: error.message || 'Error creating transfer list.' });
       } finally {
         this.loading = false;
       }
@@ -142,7 +134,7 @@ export const useTransferStore = defineStore('transfer', {
 
     async getTransferInvites(listid) {
       this.loading = true;
-      this.clearMessage(); // CORRIGIDO
+      this.clearMessage();
       this.currentList = null;
       this.currentInvites = [];
 
@@ -158,7 +150,7 @@ export const useTransferStore = defineStore('transfer', {
 
         if (error) {
           if (error.code === 'PGRST116') {
-            throw new Error('Lista de transferência não encontrada.');
+            throw new Error('Transfer list not found.');
           }
           throw error;
         }
@@ -166,33 +158,57 @@ export const useTransferStore = defineStore('transfer', {
         if (data) {
           const { transfer_invites, ...listDetails } = data;
           this.currentList = listDetails;
-          this.currentInvites = transfer_invites || []; // Garante que seja um array
+          this.currentInvites = transfer_invites || [];
         } else {
-          throw new Error('Lista de transferência não encontrada.');
+          throw new Error('Transfer list not found.');
         }
 
       } catch (error) {
-        console.error('Erro ao buscar dados da lista:', error);
-        this.showMessage({ text: error.message || 'Lista não encontrada.' }); // CORRIGIDO
+        console.error('Error fetching transfer list:', error);
+        this.showMessage({ text: error.message || 'Lista não encontrada.' });
       } finally {
         this.loading = false;
       }
     },
 
+    async verifyAccessKey(key, listId) {
+      try {
+        const { data, error } = await supabase
+          .from('transfer_lists')
+          .select('access_key')
+          .eq('id', listId)
+          .single();
+
+        if (error) throw error;
+
+        if (data.access_key === key) {
+          this.accessGranted = true;
+          this.showMessage({ text: 'Access Granted', type: 'success' });
+          return true;
+        } else {
+          this.accessGranted = false;
+          this.showMessage({ text: 'Invalid Access Key', type: 'error' });
+          return false;
+        }
+      } catch (error) {
+        console.error('Error verifying access key:', error);
+        this.showMessage({ text: 'Error verifying access key' });
+        return false;
+      }
+    },
+
     async addPlayer(playerData) {
       this.loading = true;
-      this.clearMessage(); // CORRIGIDO
+      this.clearMessage();
 
-      // 1. Busca dados externos
       const dataWOS = await getPlayerInfo(playerData.player_id);
 
       if (!dataWOS) {
-        this.showMessage({ text: 'Jogador não encontrado ou erro ao buscar dados.' }); // CORRIGIDO
+        this.showMessage({ text: 'Player not found or error fetching data.' });
         this.loading = false;
         return;
       }
 
-      // 2. Prepara o objeto para inserção
       const newInvite = {
         avatar_image: dataWOS.photo_url,
         fid: dataWOS.player_id,
@@ -200,7 +216,6 @@ export const useTransferStore = defineStore('transfer', {
         nickname: dataWOS.player_name,
         stove_lv: dataWOS.stove_lv,
         stove_lv_content: dataWOS.stove_lv_content,
-        // Dados vindos do formulário
         alliance_target: playerData.alliance_target,
         transfer_list_id: playerData.transfer_list_id,
         labyrinth: playerData.labyrinth,
@@ -208,7 +223,6 @@ export const useTransferStore = defineStore('transfer', {
       };
 
       try {
-        // 3. Insere no Supabase
         const { data, error } = await supabase
           .from('transfer_invites')
           .insert([newInvite])
@@ -217,18 +231,14 @@ export const useTransferStore = defineStore('transfer', {
 
         if (error) throw error;
 
-        // 4. Atualiza o estado local
         if (data) {
           this.currentInvites.push(data);
-          this.showMessage({ text: 'Jogador adicionado com sucesso!', type: 'success' }); // Adicionado feedback de sucesso
+          this.showMessage({ text: 'Player added successfully!', type: 'success' });
         }
 
-        // REMOVIDO: router.push(...)
-        // O componente que exibe 'currentInvites' será atualizado automaticamente.
-
       } catch (error) {
-        console.error('Erro ao adicionar jogador:', error);
-        this.showMessage({ text: 'Erro ao adicionar jogador.' }); // CORRIGIDO
+        console.error('Error adding player:', error);
+        this.showMessage({ text: 'Error adding player.' });
       } finally {
         this.loading = false;
       }
@@ -236,7 +246,7 @@ export const useTransferStore = defineStore('transfer', {
 
     async removePlayer(inviteId, listId) {
       this.loading = true;
-      this.clearMessage(); // CORRIGIDO
+      this.clearMessage();
 
       try {
         const { error } = await supabase
@@ -247,25 +257,20 @@ export const useTransferStore = defineStore('transfer', {
 
         if (error) throw error;
 
-        // CORRIGIDO: Lógica de atualização do estado
-        // Filtra o array local para remover o jogador
         this.currentInvites = this.currentInvites.filter(
           (player) => player.fid !== inviteId
         );
-        
-        this.showMessage({ text: 'Jogador removido com sucesso!', type: 'success' }); // Adicionado feedback
 
-        // REMOVIDO: router.push(...)
+        this.showMessage({ text: 'Player removed successfully!', type: 'success' });
 
       } catch (error) {
-        console.error('Erro ao remover jogador:', error);
-        this.showMessage({ text: 'Erro ao remover jogador.' }); // CORRIGIDO
+        console.error('Error removing player:', error);
+        this.showMessage({ text: 'Error removing player.' });
       } finally {
         this.loading = false;
       }
     },
 
-    // --- Funções Utilitárias ---
     generateUniqueCode(length = 8) {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       let code = '';
