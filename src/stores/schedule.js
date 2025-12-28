@@ -255,11 +255,14 @@ export const useScheduleStore = defineStore('schedule', {
       this.loading = true;
       try {
         const accessKey = this.generateUniqueCode(6);
+        const id = this.generateUniqueCode(8);
+
 
         const { data, error } = await supabase
           .from('links')
           .insert([
             {
+              id: id,
               access_key: accessKey,
               description: newLinkData.description,
               title: newLinkData.title,
