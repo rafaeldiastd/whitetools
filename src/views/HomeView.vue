@@ -42,7 +42,7 @@ const tools = [
     {
         title: 'Bear Hive',
         description: 'Manage hive location and sign-ups.',
-        path: '/bearhive',
+        path: '#',
         icon: '/images/bearspace-ico.png'
     },
     {

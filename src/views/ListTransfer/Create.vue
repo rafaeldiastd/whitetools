@@ -17,6 +17,17 @@
                         <BaseInput id="linkTitle" label="Title" v-model="transferStore.newTransferData.title" />
                     </div>
 
+                    <div class="col-span-4 flex flex-col gap-2">
+                        <div class="flex items-end gap-2">
+                            <div class="grow">
+                                <BaseInput id="responsibleId" label="Responsible ID" v-model="responsibleIdInput"
+                                    placeholder="Enter Player ID" />
+                            </div>
+
+                        </div>
+                        <p v-if="responsibleError" class="text-red-400 text-xs">{{ responsibleError }}</p>
+                    </div>
+
                     <div class="flex flex-col gap-1 col-span-4">
                         <label class="text-sm" for="linkDescription">Description</label>
                         <textarea id="linkDescription" v-model="transferStore.newTransferData.description"
@@ -82,15 +93,27 @@
                 <div class="flex flex-col gap-2 col-span-4 mt-4">
                     <label class="text-sm">Admin Access</label>
                     <div class="flex flex-col gap-4 p-4 rounded-xl bg-wos-800">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-sm text-wos-100" for="admin-pass">Admin Password</label>
-                            <input id="admin-pass" type="text" placeholder="Create a password for admin access"
-                                v-model="adminPassword"
-                                class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50"
-                                required>
-                            <span class="text-xs text-wostools-text-secondary">This password will be required to manage
-                                this list.</span>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-sm text-wos-100" for="admin-pass">Admin Password</label>
+                                <input id="admin-pass" type="text" placeholder="Admin Key" v-model="adminPassword"
+                                    class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50"
+                                    required>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-sm text-wos-100" for="alliance-pass">Alliance Access Password</label>
+                                <input id="alliance-pass" type="text" placeholder="Shared Alliance Key"
+                                    v-model="alliancePassword"
+                                    class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50"
+                                    required>
+                            </div>
                         </div>
+
+                        <span class="text-xs text-wostools-text-secondary">
+                            These keys are required to manage the list.
+                            <span class="text-wostools-text-secondary cursor-pointer underline mx-1"
+                                @click="generatePasswords">Generate Random for Both</span>
+                        </span>
                     </div>
                 </div>
 
@@ -105,10 +128,13 @@
             </div>
 
             <LinkCreatedSuccess v-else :access-key="transferStore.linkData?.access_key"
+                :alliance-password="transferStore.linkData?.alliance_password"
                 :generated-link="transferStore.linkData?.generated_link" />
         </div>
     </div>
     <Alert v-if="transferStore.message.text" :message="transferStore.message.text" :type="transferStore.message.type" />
+    <BlockModal :visible="transferStore.blockModal.visible" :message="transferStore.blockModal.message"
+        :image="transferStore.blockModal.image" @close="transferStore.closeBlockModal" />
 
 </template>
 
@@ -119,6 +145,7 @@ import BaseInput from '@/components/ui/BaseInput.vue';
 import BaseButton from '@/components/ui/BaseButton.vue';
 import LinkCreatedSuccess from '@/components/LinkCreatedSuccess.vue';
 import Alert from '@/components/Alert.vue';
+import BlockModal from '@/components/BlockModal.vue';
 
 // 1. Instanciar a store (apenas uma vez)
 const transferStore = useTransferStore();
@@ -131,9 +158,9 @@ const furnaceOptions = [
 ];
 
 const baseLevel = 31; // Nível inicial do FC1
-const numCamps = 8;   // De FC1 a FC7
+const numCamps = 10;   // De FC1 a FC10
 
-// Gera as opções de FC1 a FC7
+// Gera as opções de FC1 a FC10
 for (let i = 0; i < numCamps; i++) {
     const campNumber = i + 1;
     const startLevel = baseLevel + (i * 5); // 31, 36, 41...
@@ -143,7 +170,6 @@ for (let i = 0; i < numCamps; i++) {
         value: startLevel // Salva o nível mínimo do "camp"
     });
 }
-
 
 // --- Funções de Formatação (copiadas da sua implementação) ---
 
@@ -181,32 +207,12 @@ function parseSimplifiedNumber(str) {
 
 // 2. Refs para controlar o TEXTO dos inputs
 // Inicializa com o valor formatado que já possa existir na store
-const labyrinthInput = ref(
-    simplifyNumber(transferStore.newTransferData.requirements.max_labyrinth)
-);
+
 const powerInput = ref(
     simplifyNumber(transferStore.newTransferData.requirements.max_power)
 );
 
-// 3. Handlers para Labyrinth
-const onLabyrinthFocus = () => {
-    // Ao focar, mostra o número real
-    if (transferStore.newTransferData.requirements.max_labyrinth) {
-        labyrinthInput.value = transferStore.newTransferData.requirements.max_labyrinth;
-    }
-};
-const onLabyrinthBlur = () => {
-    // Ao sair, parseia o valor digitado (ex: "1.5M")
-    const parsedValue = parseSimplifiedNumber(labyrinthInput.value);
-    // Salva o NÚMERO REAL na store
-    transferStore.newTransferData.requirements.max_labyrinth = parsedValue;
-    // Atualiza o input para exibir o texto formatado (ou '' se inválido)
-    labyrinthInput.value = parsedValue ? simplifyNumber(parsedValue) : '';
-};
-
-// 4. Handlers para Power
 const onPowerFocus = () => {
-    // Ao focar, mostra o número real
     if (transferStore.newTransferData.requirements.max_power) {
         powerInput.value = transferStore.newTransferData.requirements.max_power;
     }
@@ -232,12 +238,82 @@ function removeInvite(index) {
 
 // --- Criação do Link ---
 const adminPassword = ref('');
+const alliancePassword = ref('');
+const responsibleIdInput = ref('');
+const responsibleError = ref('');
 
-function createTransferLink() {
+function generatePasswords() {
+    adminPassword.value = transferStore.generateUniqueCode(6);
+    alliancePassword.value = transferStore.generateUniqueCode(6);
+}
+
+
+import { getPlayerInfo } from '@/services/wosapi';
+
+async function fetchResponsibleInfo() {
+    if (!responsibleIdInput.value) {
+        transferStore.newTransferData.responsible_id = '';
+        transferStore.newTransferData.responsible_data = null;
+        return;
+    }
+
+    try {
+        const info = await getPlayerInfo(responsibleIdInput.value);
+        if (info) {
+            transferStore.newTransferData.responsible_id = responsibleIdInput.value;
+            transferStore.newTransferData.responsible_data = {
+                name: info.player_name,
+                avatar: info.photo_url,
+                state: info.kid
+            };
+            responsibleError.value = '';
+        } else {
+            responsibleError.value = 'Player not found.';
+            transferStore.newTransferData.responsible_id = '';
+            transferStore.newTransferData.responsible_data = null;
+        }
+    } catch (e) {
+        console.error(e);
+        responsibleError.value = 'Error fetching player info.';
+    }
+}
+
+
+async function createTransferLink() {
+    // Ensure we have info before creating
+    if (!transferStore.newTransferData.responsible_data) {
+        await fetchResponsibleInfo();
+    }
+
     if (!adminPassword.value) {
         transferStore.showMessage({ text: 'Please enter an Admin Password', type: 'error' });
         return;
     }
+    if (!alliancePassword.value) {
+        transferStore.showMessage({ text: 'Please enter an Alliance Access Password', type: 'error' });
+        return;
+    }
+    if (!transferStore.newTransferData.responsible_id) {
+        transferStore.showMessage({ text: 'Please enter a valid Responsible ID', type: 'error' });
+        return;
+    }
+
+    // Check Block Rules using Store Logic
+    const playerInfo = {
+        player_name: transferStore.newTransferData.responsible_data.name,
+        kid: transferStore.newTransferData.responsible_data.state
+    };
+
+    const blockRule = transferStore.checkBlocked(playerInfo);
+
+    if (blockRule) {
+        // Show Block Modal instead of Alert
+        transferStore.showBlockModal(blockRule.message, blockRule.image);
+        transferStore.newTransferData.responsible_id = '';
+        transferStore.newTransferData.responsible_data = null;
+        return;
+    }
+
     transferStore.createTransferLink(adminPassword.value);
 }
 

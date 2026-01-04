@@ -18,18 +18,18 @@
 </template>
 
 <script setup>
-import { useScheduleStore } from '@/stores/schedule';
-import { computed } from 'vue';
 import BaseButton from '@/components/ui/BaseButton.vue';
 
-const store = useScheduleStore();
+const props = defineProps({
+    visible: Boolean,
+    message: String,
+    image: String
+});
 
-const visible = computed(() => store.blockModal.visible);
-const message = computed(() => store.blockModal.message);
-const image = computed(() => store.blockModal.image);
+const emit = defineEmits(['close']);
 
 const close = () => {
-    store.closeBlockModal();
+    emit('close');
 };
 </script>
 

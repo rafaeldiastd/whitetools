@@ -40,6 +40,8 @@
                     <div class="col-span-3">
                         <BaseInput id="adminPass" label="Admin Password" type="text" v-model="newLinkData.adminPassword"
                             required placeholder="Password for managing this schedule" />
+                        <span class="text-wostools-text-secondary cursor-pointer underline mx-1"
+                            @click="generatePasswords">Generate Random</span>
                     </div>
                     <div class="col-span-3">
                         <BaseButton @click="createLink" :disabled="loading" class="w-full">
@@ -71,13 +73,19 @@ import Alert from '@/components/Alert.vue';
 
 const scheduleStore = useScheduleStore();
 
+
 const loading = ref(false);
 const newLinkData = ref({
     title: '',
     construction_time: '',
     research_time: '',
     training_time: '',
+    adminPassword: '',
 });
+
+function generatePasswords() {
+    newLinkData.value.adminPassword = scheduleStore.generateUniqueCode(6);
+}
 
 function createLink() {
     if (!newLinkData.value.adminPassword) {

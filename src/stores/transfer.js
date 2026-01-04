@@ -11,9 +11,21 @@ const getInitialNewData = () => ({
   requirements: {
     max_power: null,
     min_furnace_level: null,
+    max_power: null,
+    min_furnace_level: null,
     max_labyrinth: null
-  }
+  },
+  responsible_id: '',
+  responsible_data: null
 });
+
+// Rules for blocking players
+const BLOCKED_RULES = {
+  names: {},
+  states: {
+    "1898": "This state is blocked. Congrats piece of shit Guarilha."
+  }
+};
 
 export const useTransferStore = defineStore('transfer', {
 
@@ -23,18 +35,69 @@ export const useTransferStore = defineStore('transfer', {
     message: { text: null, type: 'info' },
     linkData: null, // Stores the created link data (id, access_key, etc.)
     accessGranted: false, // Controls admin access
+    isAllianceMod: false, // Controls global alliance access
 
     currentList: null, // Para guardar os detalhes da lista (título, ID, requisitos)
     currentInvites: [], // Para guardar a lista de jogadores
+
+    // Modal de Bloqueio (Igual ao Schedule)
+    blockModal: {
+      visible: false,
+      message: '',
+      image: null
+    }
   }),
 
   getters: {
     isLoading: (state) => state.loading,
     getMessage: (state) => state.message,
     isAdmin: (state) => state.accessGranted,
+    isAllianceGlobal: (state) => state.isAllianceMod,
   },
 
   actions: {
+    // --- ACTIONS FOR BLOCK MODAL ---
+    showBlockModal(message, image = null) {
+      this.blockModal = { visible: true, message, image };
+    },
+
+    closeBlockModal() {
+      this.blockModal = { visible: false, message: '', image: null };
+    },
+
+    checkBlocked(playerInfo) {
+      if (!playerInfo) return false;
+
+      // Helper to process rule (string or object)
+      const processBlock = (rule) => {
+        if (typeof rule === 'string') {
+          return { message: rule, image: null };
+        }
+        return rule;
+      };
+
+      // Check by Name
+      if (playerInfo.player_name) {
+        const rule = Object.entries(BLOCKED_RULES.names).find(([name, rule]) =>
+          name.toLowerCase() === playerInfo.player_name.toLowerCase()
+        )?.[1];
+
+        if (rule) {
+          return processBlock(rule);
+        }
+      }
+
+      // Check by State (Kid)
+      if (playerInfo.kid) {
+        const rule = BLOCKED_RULES.states[String(playerInfo.kid)];
+        if (rule) {
+          return processBlock(rule);
+        }
+      }
+
+      return false; // Not blocked
+    },
+
     // --- AÇÕES DE MENSAGEM ---
     showMessage({ text, type = 'error', duration = 5000 }) {
       this.message = { text, type };
@@ -68,19 +131,22 @@ export const useTransferStore = defineStore('transfer', {
 
     // --- AÇÕES ASYNC (BANCO DE DADOS) ---
 
-    async createTransferLink(adminPassword) {
+    async createTransferLink(adminPassword, alliancePassword) {
       this.loading = true;
       this.clearMessage();
       const id = this.generateUniqueCode(8);
       // Use provided password or fallback to generated (though UI should prevent empty)
       const accessKey = adminPassword || this.generateUniqueCode(6);
 
+      // Use provided alliance password or generate a shared one
+      const sharedAlliancePass = alliancePassword || this.generateUniqueCode(6);
+
       try {
         const invitesPayload = this.newTransferData.alliance_invites.reduce((acc, invite) => {
           if (invite.tag && (invite.spots !== null && invite.spots !== '')) {
             acc[invite.tag.toUpperCase()] = {
               spots: Number(invite.spots),
-              password: this.generateUniqueCode(6) // Generate alliance password
+              password: sharedAlliancePass // Use the SAME password for all
             };
           }
           return acc;
@@ -104,6 +170,8 @@ export const useTransferStore = defineStore('transfer', {
               alliance_invites: invitesPayload,
               requirements: requirementsPayload,
               access_key: accessKey,
+              responsible_id: this.newTransferData.responsible_id,
+              responsible_data: this.newTransferData.responsible_data
             }
           ])
           .select()
@@ -112,7 +180,7 @@ export const useTransferStore = defineStore('transfer', {
         if (error) {
           if (error.code === '23505') {
             console.warn('Slug collision detected, retrying...');
-            return this.createTransferLink(adminPassword);
+            return this.createTransferLink(adminPassword, alliancePassword);
           }
           throw error;
         }
@@ -121,7 +189,8 @@ export const useTransferStore = defineStore('transfer', {
           this.linkData = {
             ...data,
             generated_link: `${window.location.origin}/transfer/${data.id}`,
-            access_key: accessKey
+            access_key: accessKey,
+            alliance_password: sharedAlliancePass // Pass back for display
           };
           this.showMessage({ text: 'Link created successfully!', type: 'success' });
         } else {
@@ -192,7 +261,6 @@ export const useTransferStore = defineStore('transfer', {
         this.accessGranted = true;
         this.showMessage({ text: 'Access Granted', type: 'success' });
         return true;
-
       } catch (error) {
         console.error('Error verifying access key:', error);
         this.showMessage({ text: 'Error verifying access key' });
@@ -200,17 +268,48 @@ export const useTransferStore = defineStore('transfer', {
       }
     },
 
+    // Updated to handle global verification (verifies against the first available tag)
+    async verifyAlliancePasswordGlobal(password, listId) {
+      // We need at least one alliance tag to verify against the RPC
+      // RPC check: list_id, tag, key. 
+      // Since all alliances share the same key now, checking against any works.
+      if (!this.currentList || !this.currentList.alliance_invites) {
+        return false;
+      }
+
+      const tags = Object.keys(this.currentList.alliance_invites);
+      if (tags.length === 0) return false;
+
+      const tagToVerify = tags[0]; // Pick the first one
+
+      try {
+        const { data, error } = await supabase
+          .rpc('verify_alliance_password', { list_id: listId, tag: tagToVerify, key: password });
+
+        if (error || !data) {
+          return false;
+        }
+
+        this.isAllianceMod = true; // Global flag
+        return true;
+      } catch (error) {
+        console.error('Error verifying alliance password:', error);
+        return false;
+      }
+    },
+
+    // Kept for backward compatibility or if using tag specific
     async verifyAlliancePassword(tag, password, listId) {
       try {
-        // Check if password matches via JSON path query
-        // Note: tag must be sanitized or properly escaped if used in path
-        // Supabase/Postgrest arrow operator '->' gets JSON object field
         const { data, error } = await supabase
           .rpc('verify_alliance_password', { list_id: listId, tag: tag, key: password });
 
         if (error || !data) {
           return false;
         }
+
+        // If success, we also set global Mod because passwords are same
+        this.isAllianceMod = true;
         return true;
       } catch (error) {
         console.error('Error verifying alliance password:', error);
@@ -332,6 +431,28 @@ export const useTransferStore = defineStore('transfer', {
         this.showMessage({ text: 'Error removing player.' });
       } finally {
         this.loading = false;
+      }
+    },
+
+    async updatePlayer(player) {
+      // Optimistic update is already happening via v-model in component, 
+      // but we need to ensure the DB is updated.
+      try {
+        const { error } = await supabase
+          .from('transfer_invites')
+          .update({
+            labyrinth: player.labyrinth,
+            power: player.power,
+            // stove_lv: player.stove_lv // If we decide to allow editing stove_lv later
+          })
+          .eq('fid', player.fid)
+          .eq('transfer_list_id', player.transfer_list_id);
+
+        if (error) throw error;
+        this.showMessage({ text: 'Player updated successfully', type: 'success' });
+      } catch (error) {
+        console.error('Error updating player:', error);
+        this.showMessage({ text: 'Error updating player', type: 'error' });
       }
     },
 

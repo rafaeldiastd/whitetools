@@ -6,27 +6,54 @@
         </div>
 
         <div class="grid grid-cols-6 gap-3 py-4 items-center">
-            <div class="bg-wostools-800 px-4 py-3 rounded-xl col-span-6 text-center truncate text-white">
-                {{ accessKey }}
+            <div class="col-span-6 flex flex-col gap-1">
+                <span class="text-white text-sm ml-1">Admin Access Key</span>
+                <div class="flex gap-2">
+                    <div
+                        class="bg-wostools-800 px-4 py-3 rounded-xl w-full text-center truncate text-white border border-white/10">
+                        {{ accessKey }}
+                    </div>
+                    <BaseButton variant="blue" @click="copyToClipboard(accessKey)">
+                        Copy
+                    </BaseButton>
+                </div>
             </div>
-            <div class="col-span-6">
-                <BaseButton variant="blue" @click="copyToClipboard(accessKey)" class="w-full">
-                    Copy key
-                </BaseButton>
+            <div class="col-span-6 flex flex-col gap-1">
+                <span class="text-white text-sm ml-1">Share Link</span>
+                <div class="flex gap-2">
+                    <div
+                        class="bg-wostools-800 px-4 py-3 rounded-xl w-full text-center truncate text-white border border-white/10">
+                        {{ generatedLink }}
+                    </div>
+                    <BaseButton variant="blue" @click="copyToClipboard(generatedLink)">
+                        Copy
+                    </BaseButton>
+                </div>
             </div>
-            <div class="bg-wostools-800 p-4 rounded-xl col-span-6 text-center truncate text-white">
-                {{ generatedLink }}
+
+            <div class="col-span-6 pt-2">
+                <a :href="generatedLink" class="w-full block">
+                    <BaseButton variant="blue" class="w-full">
+                        Access link
+                    </BaseButton>
+                </a>
             </div>
-            <div class="col-span-6">
-                <BaseButton variant="blue" @click="copyToClipboard(generatedLink)" class="w-full">
-                    Copy link
-                </BaseButton>
+
+            <div v-if="alliancePassword" class="col-span-6 flex flex-col gap-1 mt-2 border-t border-white/10 pt-4">
+                <span class="text-white text-sm ml-1 font-bold">Alliance Access Key (Shared)</span>
+                <p class="text-xs text-wostools-text-secondary mb-1">Use this key to let alliance leaders add players.
+                </p>
+                <div class="flex gap-2">
+                    <div
+                        class="bg-wostools-800 px-4 py-3 rounded-xl w-full text-center truncate text-white border border-white/10">
+                        {{ alliancePassword }}
+                    </div>
+                    <BaseButton variant="secondary" @click="copyToClipboard(alliancePassword)">
+                        Copy
+                    </BaseButton>
+                </div>
             </div>
-            <a :href="generatedLink" class="col-span-6">
-                <BaseButton variant="blue" class="w-full">
-                    Access link
-                </BaseButton>
-            </a>
+
         </div>
     </div>
 </template>
@@ -43,6 +70,10 @@ defineProps({
     generatedLink: {
         type: String,
         required: true
+    },
+    alliancePassword: {
+        type: String,
+        default: ''
     }
 });
 </script>

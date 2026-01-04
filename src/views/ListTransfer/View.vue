@@ -10,6 +10,12 @@
                     Settings
                 </div>
             </div>
+            <div class="flex items-center p-2" @click="handleAddPlayerClick">
+                <div class="hover:cursor-pointer hover:text-wostools-800 flex flex-col items-center text-xs px-4">
+                    <img src="/src/assets/images/add-icon.png" alt="Add" class="w-8 h-8">
+                    Add Player
+                </div>
+            </div>
         </div>
 
         <router-link to="/">
@@ -20,10 +26,12 @@
             <div
                 class="flex justify-between items-center rounded-t-xl px-4 py-2 bg-wostools-red gap-4 text-xl text-white">
                 <span>Transfer List</span>
-                <button v-if="transferStore.isAdmin" @click="saveSettings"
-                    class="bg-white text-wostools-red text-sm px-3 py-1 rounded-lg font-bold hover:bg-gray-100 transition shadow-sm">
-                    Save Changes
-                </button>
+                <div class="flex gap-2">
+                    <button v-if="transferStore.isAdmin" @click="saveSettings"
+                        class="bg-white text-wostools-red text-sm px-3 py-1 rounded-lg font-bold hover:bg-gray-100 transition shadow-sm">
+                        Save Changes
+                    </button>
+                </div>
             </div>
             <div
                 class="grid grid-cols-2 grid-rows-5 gap-2 container bg-wostools-papper border-4 rounded-b-xl border-wostools-red p-2">
@@ -60,47 +68,9 @@
                 </div>
                 <div
                     class="row-span-2 col-span-1 bg-wostools-papper-200 rounded-xl flex flex-col divide-y divide-wostools-papper-500/20  text-wostools-papper-500 justify-between p-2 text-xs">
-                    <p>{{ transferStore.currentList?.description }}</p>
+                    <span class="text-xs">Responsible: {{ transferStore.currentList?.responsible_data.name }} #{{
+                        transferStore.currentList?.responsible_data.state }}</span>
                 </div>
-            </div>
-        </div>
-
-        <div class="bg-wos-800 p-4 rounded-xl w-full max-w-2xl flex flex-col gap-4 items-center">
-            <div class="flex flex-col w-full gap-4">
-                <BaseInput id="req-id" type="number" v-model="playerData.player_id" placeholder="Player ID" required />
-
-                <BaseInput id="req-power" type="text" v-model="powerInput" @focus="onPowerFocus" @blur="onPowerBlur"
-                    placeholder="Power (ex: 10M ou 10000000)" required />
-
-                <BaseInput id="req-lab" type="number" v-model="playerData.labyrinth" placeholder="Labyrinth" required />
-
-                <label for="req-type" class="text-white text-sm ml-1">Type</label>
-                <select id="req-type" v-model="playerData.type_invite"
-                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50">
-                    <option value="common">Common</option>
-                    <option value="special">Special</option>
-                    <option value="free">Free Entry</option>
-                </select>
-
-
-                <label for="req-target" class="text-white">Who are you inviting?</label>
-                <select id="req-target" v-model="playerData.alliance_target"
-                    class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50">
-                    <option value="" disabled>Select alliance target</option>
-                    <option v-for="(count, allianceName) in transferStore.currentList?.alliance_invites"
-                        :key="allianceName" :value="allianceName">
-                        {{ allianceName }}
-                    </option>
-                </select>
-
-                <BaseButton @click="handleAddPlayer" :disabled="loading" class="w-full">
-                    <template v-if="loading">
-                        Adding...
-                    </template>
-                    <template v-else>
-                        Add Player
-                    </template>
-                </BaseButton>
             </div>
         </div>
         <div v-for="(count, allianceName) in transferStore.currentList?.alliance_invites" :key="allianceName"
@@ -126,7 +96,7 @@
                 <div v-for="player in transferStore.currentInvites.filter(p => p.alliance_target === allianceName).sort((a, b) => b.labyrinth - a.labyrinth)"
                     :key="player.id" class="relative flex flex-col">
                     <div class="grid rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between bg-wos-5 text-wos-800 bg-wos-500"
-                        :class="{ 'grid-cols-8': transferStore.isAdmin || authenticatedAlliances.has(allianceName), 'grid-cols-7': !transferStore.isAdmin && !authenticatedAlliances.has(allianceName) }">
+                        :class="{ 'grid-cols-8': transferStore.isAdmin || transferStore.isAllianceGlobal, 'grid-cols-7': !transferStore.isAdmin && !transferStore.isAllianceGlobal }">
                         <div class="col-span-1 flex flex-col items-center justify-center gap-[-10px]">
                             <img class="rounded-xl w-[50px] h-full object-fit flex items-center justify-center bg-wos-400"
                                 :src="player.avatar_image" alt="">
@@ -158,17 +128,33 @@
                             </div>
                         </div>
                         <div class="col-span-2 flex flex-col text-xs">
-                            <p class="font-wos" :class="{
-                                'bg-red-300 rounded px-1 pw-2  w-fit': player.labyrinth >= transferStore.currentList?.requirements.max_labyrinth,
-                            }">Lab: {{ player.labyrinth }}</p>
-                            <p class="font-wos" :class="{
-                                'bg-red-300 rounded px-1 pw-2  w-fit': player.power >= transferStore.currentList?.requirements.max_power,
-                            }">Power: {{ simplifyNumber(player.power) }}</p>
-                            <p class="font-wos" :class="{
-                                'bg-orange-300 rounded px-1 pw-2 w-fit': player.stove_lv <= (transferStore.currentList?.requirements.min_furnace_level - 1),
-                            }">Furnace: {{ getFCName(player.stove_lv) }}</p>
+                            <template v-if="transferStore.isAdmin || transferStore.isAllianceGlobal">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <span class="w-8">Lab:</span>
+                                    <input type="number" v-model="player.labyrinth"
+                                        class="w-16 bg-wos-400 rounded px-1 border border-wos-300 text-center"
+                                        @change="transferStore.updatePlayer(player)" />
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <span class="w-8">Pow:</span>
+                                    <input type="text" :value="simplifyNumber(player.power)"
+                                        class="w-16 bg-wos-400 rounded px-1 border border-wos-300 text-center"
+                                        @change="updatePlayerPower(player, $event.target.value)" />
+                                </div>
+                            </template>
+                            <template v-else>
+                                <p class="font-wos" :class="{
+                                    'bg-red-300 rounded px-1 pw-2  w-fit': player.labyrinth >= transferStore.currentList?.requirements.max_labyrinth,
+                                }">Lab: {{ player.labyrinth }}</p>
+                                <p class="font-wos" :class="{
+                                    'bg-red-300 rounded px-1 pw-2  w-fit': player.power >= transferStore.currentList?.requirements.max_power,
+                                }">Power: {{ simplifyNumber(player.power) }}</p>
+                                <p class="font-wos" :class="{
+                                    'bg-orange-300 rounded px-1 pw-2 w-fit': player.stove_lv <= (transferStore.currentList?.requirements.min_furnace_level - 1),
+                                }">Furnace: {{ getFCName(player.stove_lv) }}</p>
+                            </template>
                         </div>
-                        <div v-if="transferStore.isAdmin || authenticatedAlliances.has(allianceName)"
+                        <div v-if="transferStore.isAdmin || transferStore.isAllianceGlobal"
                             class="col-span-1 items-center justify-center flex absolute right-[0px] top-[-4px]">
                             <button @click="handleRemovePlayer(player.fid, transferStore.currentList.id, allianceName)"
                                 class="group relative flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-b from-orange-500 to-red-600 border-2 border-red-800 shadow-[0_4px_6px_rgba(0,0,0,0.3),inset_0_2px_4px_rgba(255,255,255,0.4),inset_0_-4px_4px_rgba(0,0,0,0.2)] active:scale-95 active:shadow-none transition-all duration-150">
@@ -177,6 +163,62 @@
                         </div>
 
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Player Modal -->
+        <div v-if="showAddPlayerModal"
+            class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+            <div
+                class="bg-wostools-800 p-6 rounded-xl w-full max-w-lg flex flex-col gap-6 shadow-xl border border-wostools-red/30">
+                <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                    <h3 class="text-xl text-white font-bold">Add Player</h3>
+                    <button @click="showAddPlayerModal = false" class="text-gray-400 hover:text-white">✕</button>
+                </div>
+
+                <div class="flex flex-col w-full gap-4">
+                    <BaseInput id="req-id" type="number" v-model="playerData.player_id" placeholder="Player ID"
+                        required />
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <BaseInput id="req-power" type="text" v-model="powerInput" @focus="onPowerFocus"
+                            @blur="onPowerBlur" placeholder="Power (ex: 10M)" required />
+
+                        <BaseInput id="req-lab" type="number" v-model="playerData.labyrinth" placeholder="Labyrinth"
+                            required />
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label for="req-type" class="text-white text-sm ml-1">Type</label>
+                        <select id="req-type" v-model="playerData.type_invite"
+                            class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50">
+                            <option value="common">Common</option>
+                            <option value="special">Special</option>
+                            <option value="free">Free Entry</option>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label for="req-target" class="text-white text-sm ml-1">Who are you inviting?</label>
+                        <select id="req-target" v-model="playerData.alliance_target"
+                            class="rounded-xl bg-wos-500 px-4 py-3 w-full text-wos-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50">
+                            <option value="" disabled>Select alliance target</option>
+                            <option v-for="(count, allianceName) in transferStore.currentList?.alliance_invites"
+                                :key="allianceName" :value="allianceName">
+                                {{ allianceName }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <BaseButton @click="handleAddPlayer" :disabled="loading" class="w-full mt-2">
+                        <template v-if="loading">
+                            Adding...
+                        </template>
+                        <template v-else>
+                            Add Player
+                        </template>
+                    </BaseButton>
                 </div>
             </div>
         </div>
@@ -195,11 +237,13 @@
         </div>
 
         <!-- Alliance Auth Modal -->
+        <!-- Alliance Auth Modal -->
         <div v-if="showAllianceAuthModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div class="bg-wostools-800 p-6 rounded-xl w-full max-w-sm flex flex-col gap-4">
-                <h3 class="text-xl text-white font-bold">Alliance Access: {{ authTargetAlliance }}</h3>
-                <p class="text-sm text-gray-300">Enter the password for alliance {{ authTargetAlliance }} to manage
-                    players.</p>
+                <h3 class="text-xl text-white font-bold">Alliance Access</h3>
+
+                <p class="text-sm text-gray-300">Enter the Alliance Access Key to manage players.</p>
+
                 <BaseInput id="alliance-pass" v-model="allianceAuthPassword" placeholder="Alliance Password" />
                 <div class="flex gap-2">
                     <BaseButton variant="secondary" @click="showAllianceAuthModal = false" class="w-full">Cancel
@@ -234,6 +278,7 @@ const props = defineProps({
 const transferStore = useTransferStore();
 const loading = ref(false);
 const showAdminModal = ref(false);
+const showAddPlayerModal = ref(false); // New Modal State
 const accessKeyInput = ref('');
 
 const powerInput = ref('');
@@ -340,26 +385,37 @@ async function handleAddPlayer() {
         return;
     }
 
-    if (transferStore.isAdmin || authenticatedAlliances.value.has(playerData.value.alliance_target)) {
+    // Since we are in a modal now, we handle closure or auth trigger
+    const addLogic = async () => {
         await transferStore.addPlayer(playerData.value);
+        showAddPlayerModal.value = false; // Close on success? 
+        // Reset form?
+        playerData.value = {
+            transfer_list_id: props.id,
+            player_id: '',
+            labyrinth: null,
+            power: null,
+            alliance_target: '',
+            type_invite: 'common',
+        };
+        powerInput.value = '';
+    };
+
+    if (transferStore.isAdmin || transferStore.isAllianceGlobal) {
+        await addLogic();
     } else {
         // Prompt for password
-        authTargetAlliance.value = playerData.value.alliance_target;
+        playerData.value.alliance_target = playerData.value.alliance_target; // keep selection
         showAllianceAuthModal.value = true;
     }
 }
 
 // Wrapper for Removing Player
 async function handleRemovePlayer(fid, listId, allianceTarget) {
-    if (transferStore.isAdmin || authenticatedAlliances.value.has(allianceTarget)) {
+    if (transferStore.isAdmin || transferStore.isAllianceGlobal) {
         await transferStore.removePlayer(fid, listId);
     } else {
-        // Technically UI shouldn't allow clicking if button handles visibility, 
-        // but if we show button and prompt:
-        authTargetAlliance.value = allianceTarget;
         showAllianceAuthModal.value = true;
-        // After auth, user has to click again? Or we retry?
-        // Simpler: Just auth unlocks the capability.
     }
 }
 
@@ -368,8 +424,6 @@ async function saveSettings() {
 
     const invites = {};
     for (const [tag, info] of Object.entries(transferStore.currentList.alliance_invites)) {
-        // Construct the invite object for the DB
-        // Must include the password. We retrieve it from the admin-fetched passwords.
         const password = alliancePasswords.value[tag];
 
         if (!password) {
@@ -391,20 +445,59 @@ async function saveSettings() {
     await transferStore.updateTransferListSettings(props.id, payload);
 }
 
+const isPendingAddPlayer = ref(false);
+
+function handleAddPlayerClick() {
+    // If admin or already authenticated globally, open Add Player modal directly
+    if (transferStore.isAdmin || transferStore.isAllianceGlobal) {
+        showAddPlayerModal.value = true;
+    } else {
+        // Prompt for authentication first
+        isPendingAddPlayer.value = true;
+        showAllianceAuthModal.value = true;
+    }
+}
+
 async function verifyAllianceAuth() {
-    const isValid = await transferStore.verifyAlliancePassword(authTargetAlliance.value, allianceAuthPassword.value, props.id);
-    if (isValid) {
-        authenticatedAlliances.value.add(authTargetAlliance.value);
+    // Check global password first
+    const isGlobal = await transferStore.verifyAlliancePasswordGlobal(allianceAuthPassword.value, props.id);
+
+    if (isGlobal) {
         showAllianceAuthModal.value = false;
         allianceAuthPassword.value = '';
         transferStore.showMessage({ text: 'Alliance Access Granted', type: 'success' });
 
-        // If we were adding a player, retry
-        if (playerData.value.player_id && playerData.value.alliance_target === authTargetAlliance.value) {
-            await transferStore.addPlayer(playerData.value);
+        if (isPendingAddPlayer.value) {
+            isPendingAddPlayer.value = false;
+            showAddPlayerModal.value = true;
         }
-    } else {
-        transferStore.showMessage({ text: 'Invalid Alliance Password', type: 'error' });
+        return;
+    }
+
+    // If not global, try Admin key
+    const isAdmin = await transferStore.verifyAccessKey(allianceAuthPassword.value, props.id);
+    if (isAdmin) {
+        showAllianceAuthModal.value = false;
+        allianceAuthPassword.value = '';
+        // Store already shows "Access Granted" message
+
+        if (isPendingAddPlayer.value) {
+            isPendingAddPlayer.value = false;
+            showAddPlayerModal.value = true;
+        }
+        return;
+    }
+
+    // If both failed, verifyAccessKey already showed "Invalid Access Key"
+    // But verifyAlliancePasswordGlobal didn't show anything.
+    // If verifyAccessKey showed error, we are good.
+}
+
+function updatePlayerPower(player, value) {
+    const parsed = parseSimplifiedNumber(value);
+    if (parsed !== null) {
+        player.power = parsed;
+        transferStore.updatePlayer(player);
     }
 }
 
