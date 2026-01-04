@@ -261,6 +261,7 @@ export const useScheduleStore = defineStore('schedule', {
       return null;
     },
 
+
     async createLinkSchedule(newLinkData) {
       this.loading = true;
       try {
