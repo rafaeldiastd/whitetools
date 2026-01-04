@@ -104,7 +104,7 @@ export const useScheduleStore = defineStore('schedule', {
     // Método para recuperar do cache
     getAccessFromCache(linkId) {
       try {
-        const cachedData = null;
+        let cachedData = null;
 
         // Tenta recuperar do localStorage primeiro
         if (typeof Storage !== 'undefined' && window.localStorage) {
