@@ -143,13 +143,9 @@ export const useTransferStore = defineStore('transfer', {
       this.currentInvites = [];
 
       try {
+        // Safe fetch via RPC
         const { data, error } = await supabase
-          .from('transfer_lists')
-          .select(`
-            *,
-            transfer_invites(*)
-          `)
-          .eq('id', listid)
+          .rpc('get_transfer_list_details', { list_id: listid })
           .single();
 
         if (error) {
@@ -159,25 +155,17 @@ export const useTransferStore = defineStore('transfer', {
           throw error;
         }
 
+        // Separate fetch for players
+        const { data: invitesData, error: invitesError } = await supabase
+          .from('transfer_invites')
+          .select('*')
+          .eq('transfer_list_id', listid);
+
+        if (invitesError) throw invitesError;
+
         if (data) {
-          const { transfer_invites, alliance_invites, ...listDetails } = data;
-
-          // Strip passwords from the state so we don't accidentally display them
-          // unless explicitly needed (admin logic will fetch them differently or we keep them hidden)
-          const safeAllianceInvites = {};
-          if (alliance_invites) {
-            for (const [tag, info] of Object.entries(alliance_invites)) {
-              // Handle both old format (number) and new format (object)
-              if (typeof info === 'object' && info !== null) {
-                safeAllianceInvites[tag] = { spots: info.spots }; // Exclude password
-              } else {
-                safeAllianceInvites[tag] = info; // Old format
-              }
-            }
-          }
-
-          this.currentList = { ...listDetails, alliance_invites: safeAllianceInvites };
-          this.currentInvites = transfer_invites || [];
+          this.currentList = data; // Already sanitized by RPC
+          this.currentInvites = invitesData || [];
         } else {
           throw new Error('Transfer list not found.');
         }
@@ -193,11 +181,7 @@ export const useTransferStore = defineStore('transfer', {
     async verifyAccessKey(key, listId) {
       try {
         const { data, error } = await supabase
-          .from('transfer_lists')
-          .select('id')
-          .eq('id', listId)
-          .eq('access_key', key)
-          .single();
+          .rpc('verify_transfer_access', { list_id: listId, key: key });
 
         if (error || !data) {
           this.accessGranted = false;
@@ -222,11 +206,7 @@ export const useTransferStore = defineStore('transfer', {
         // Note: tag must be sanitized or properly escaped if used in path
         // Supabase/Postgrest arrow operator '->' gets JSON object field
         const { data, error } = await supabase
-          .from('transfer_lists')
-          .select('id')
-          .eq('id', listId)
-          .eq(`alliance_invites->${tag.toUpperCase()}->>password`, password)
-          .single();
+          .rpc('verify_alliance_password', { list_id: listId, tag: tag, key: password });
 
         if (error || !data) {
           return false;

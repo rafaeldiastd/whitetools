@@ -176,26 +176,12 @@ export const useScheduleStore = defineStore('schedule', {
     async verifyAccessKey(key, linkId, isFromCache = false) {
       try {
         const { data, error } = await supabase
-          .from('links')
-          .select('id, access_key') // We rely on server check if we filter, but here checking locally for now or refactor
-          // Wait, 'links' table might be public too. 
-          // Let's use the same pattern: check existence with key
-          .eq('id', linkId)
-          .eq('access_key', key)
-          .single();
+          .rpc('verify_schedule_access', { link_id: linkId, key: key });
 
         if (error || !data) {
-          // If error or no data found (meaning key didn't match if we rely on eq)
-          // But wait, the previous code selected access_key and checked locally.
-          // If we use .eq('access_key', key), we delegate the check to the DB.
-          // This requires the DB to confirm the match.
-
-          // Existing logic:
-          // if (error) throw error;
-          // if (data.access_key === key) ...
-
-          // New Logic: 
-          // If query returns a row, it matched.
+          // RPC returns boolean directly as data? or inside object?
+          // Postgres function returns BOOLEAN. Supabase returns it as `data`.
+          // If false, data is false.
 
           this.accessGranted = false;
           this.clearAccessCache(linkId);
@@ -206,7 +192,7 @@ export const useScheduleStore = defineStore('schedule', {
           return false;
         }
 
-        // If we got here, data exists, so key matched
+        // If data is true, access granted.
         this.accessGranted = true;
 
         if (!isFromCache) {
@@ -682,9 +668,10 @@ export const useScheduleStore = defineStore('schedule', {
 
       try {
         // Sua lógica existente para buscar dados...
+        // Explicitly select columns to avoid getting access_key
         const { data: link_data, error: link_error } = await supabase
           .from('links')
-          .select('training_time, construction_time, research_time, title, id, description')
+          .select('id, title, description, training_time, construction_time, research_time')
           .eq('id', this.linkId)
           .single()
 
