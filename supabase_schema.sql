@@ -30,11 +30,7 @@ CREATE TABLE IF NOT EXISTS transfer_invites (
 
 -- 3. Schedule Links Table
 CREATE TABLE IF NOT EXISTS links (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Or text if using short codes, store uses generateUniqueCode(6) which is text?
-    -- Wait, store uses generateUniqueCode(6) but supabase might auto-gen UUID if not provided? 
-    -- Store code: insert([{ access_key, ... }]).select().single()
-    -- It does NOT send ID. So ID is likely auto-generated UUID or INT. 
-    -- Let's assume UUID based on typical Supabase patterns.
+    id TEXT PRIMARY KEY, -- Changed from UUID to TEXT to support short codes
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     access_key TEXT,
     title TEXT,
@@ -57,7 +53,7 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE TABLE IF NOT EXISTS slots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-    link_id UUID REFERENCES links(id) ON DELETE CASCADE,
+    link_id TEXT REFERENCES links(id) ON DELETE CASCADE, -- Changed referenced column type to TEXT
     slot_date DATE,
     start_time TIME,
     end_time TIME,

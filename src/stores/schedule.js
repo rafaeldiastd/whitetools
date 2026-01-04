@@ -19,7 +19,12 @@ export const useScheduleStore = defineStore('schedule', {
     subscriptionStatus: 'disconnected',
     onlineUsers: [],
     lastUpdate: null,
-    pendingChanges: new Set()
+    pendingChanges: new Set(),
+    blockModal: {
+      visible: false,
+      message: '',
+      image: null
+    }
   }),
 
   getters: {
@@ -37,6 +42,14 @@ export const useScheduleStore = defineStore('schedule', {
   },
 
   actions: {
+    showBlockModal(message, image = null) {
+      this.blockModal = { visible: true, message, image };
+    },
+
+    closeBlockModal() {
+      this.blockModal = { visible: false, message: '', image: null };
+    },
+
     showMessage(payloadOrText, type = 'info', duration = 5000) {
       let messageText = '';
       let messageType = type;
@@ -91,7 +104,7 @@ export const useScheduleStore = defineStore('schedule', {
     // Método para recuperar do cache
     getAccessFromCache(linkId) {
       try {
-        let cachedData = null;
+        const cachedData = null;
 
         // Tenta recuperar do localStorage primeiro
         if (typeof Storage !== 'undefined' && window.localStorage) {
@@ -172,17 +185,16 @@ export const useScheduleStore = defineStore('schedule', {
       return false;
     },
 
-    // Atualizar o método verifyAccessKey para usar cache
-    async verifyAccessKey(key, linkId, isFromCache = false) {
+    async verifyAccessKey(linkId, accessKey, isFromCache = false) {
       try {
+        // Fallback to direct query since RPC is confirmed missing/broken on server
         const { data, error } = await supabase
-          .rpc('verify_schedule_access', { link_id: linkId, key: key });
+          .from('links')
+          .select('access_key')
+          .eq('id', linkId)
+          .single();
 
         if (error || !data) {
-          // RPC returns boolean directly as data? or inside object?
-          // Postgres function returns BOOLEAN. Supabase returns it as `data`.
-          // If false, data is false.
-
           this.accessGranted = false;
           this.clearAccessCache(linkId);
 
@@ -192,16 +204,26 @@ export const useScheduleStore = defineStore('schedule', {
           return false;
         }
 
-        // If data is true, access granted.
-        this.accessGranted = true;
+        if (data.access_key === accessKey) {
+          // Access Granted
+          this.accessGranted = true;
 
-        if (!isFromCache) {
-          this.saveAccessToCache(linkId, key);
-          this.showMessage('Access Granted');
-        } else if (isFromCache) {
-          this.showMessage('Access restored from cache');
+          if (!isFromCache) {
+            this.saveAccessToCache(linkId, accessKey);
+            this.showMessage('Access Granted');
+          } else if (isFromCache) {
+            this.showMessage('Access restored from cache');
+          }
+          return true;
+        } else {
+          // Invalid key
+          this.accessGranted = false;
+          this.clearAccessCache(linkId);
+          if (!isFromCache) {
+            this.showMessage('Invalid Access Key');
+          }
+          return false;
         }
-        return true;
 
       } catch (error) {
         console.error('Erro ao verificar access key:', error);
@@ -591,6 +613,51 @@ export const useScheduleStore = defineStore('schedule', {
 
         const playerInfo = await getPlayerInfo(playerId)
         if (!playerInfo) throw new Error('Player not found. Please check the ID.')
+
+        // RULES DE BLOQUEIO
+        const BLOCKED_RULES = {
+          names: {
+            // "NomeDoJogador": "Mensagem personalizada"
+            // pode ser objeto também: { message: "msg", image: "url" }
+          },
+          states: {
+            "1898": "This state is blocked. Congrats piece of shit Guarilha."
+            // Pode adicionar mais estados aqui
+          }
+        };
+
+        // Função auxiliar para processar regra
+        const processBlock = (rule) => {
+          if (typeof rule === 'string') {
+            return { message: rule, image: null };
+          }
+          return rule; // assume que já é { message, image }
+        };
+
+        // Verifica bloqueio por nome (case insensitive)
+        if (playerInfo.player_name) {
+          const rule = Object.entries(BLOCKED_RULES.names).find(([name, rule]) =>
+            name.toLowerCase() === playerInfo.player_name.toLowerCase()
+          )?.[1];
+
+          if (rule) {
+            const { message, image } = processBlock(rule);
+            this.showBlockModal(message, image);
+            this.pendingChanges.delete(slot.id); // libera o slot
+            return { success: false, error: message }; // Retorna como 'handled' mas sem sucesso
+          }
+        }
+
+        // Verifica bloqueio por estado (kid)
+        if (playerInfo.kid) {
+          const rule = BLOCKED_RULES.states[String(playerInfo.kid)];
+          if (rule) {
+            const { message, image } = processBlock(rule);
+            this.showBlockModal(message, image);
+            this.pendingChanges.delete(slot.id); // libera o slot
+            return { success: false, error: message };
+          }
+        }
 
         const { error: playerError } = await supabase
           .from('players')

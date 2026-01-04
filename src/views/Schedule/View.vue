@@ -315,7 +315,7 @@
                         class="col-span-1 rounded-2xl border-b-3 hover:cursor-pointer hover:from-wosbutton-bh50  hover:to-wosbutton-bh100 border-wosbutton-bb bg-linear-to-t from-wosbutton-b50 to-wosbutton-b100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-white w-full">
                         <span>Logout</span>
                     </button>
-                    <button @click="accessKeyVerification(accessKey, scheduleStore.linkId)"
+                    <button @click="accessKeyVerification(scheduleStore.linkId, accessKey)"
                         v-if="!scheduleStore.accessGranted"
                         class="col-span-1 rounded-2xl border-b-3 hover:cursor-pointer hover:from-wosbutton-yh50  hover:to-wosbutton-yh100 border-wosbutton-yb bg-linear-to-t from-wosbutton-y50 to-wosbutton-y100 shadow-md inset-shadow-sm inset-shadow-white/60 px-9 py-2.5 text-wosbutton-yb w-full">
                         Confirm
