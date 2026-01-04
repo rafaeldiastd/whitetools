@@ -9,7 +9,7 @@
                 strategy.
             </p>
             <p>
-                Whether you are coordinating a Bear Trap event, planning for State vs State (SVS) bonuses, or managing
+                Whether you are coordinating a Bear Trap event, planning for State vs State (SVS) buffs, or managing
                 player transfers, we have the right tool for you.
             </p>
         </div>
@@ -34,8 +34,8 @@ const router = useRouter();
 
 const tools = [
     {
-        title: 'SVS Bonus',
-        description: 'Coordinate alliance events and bonuses.',
+        title: 'SVS Buff',
+        description: 'Coordinate alliance events and buffs.',
         path: '/schedule',
         icon: '/images/state-power.png'
     },

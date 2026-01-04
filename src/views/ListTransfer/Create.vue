@@ -79,8 +79,22 @@
                     </div>
                 </div>
 
-                <BaseButton @click="transferStore.createTransferLink()" :disabled="transferStore.isLoading"
-                    class="w-full mt-4">
+                <div class="flex flex-col gap-2 col-span-4 mt-4">
+                    <label class="text-sm">Admin Access</label>
+                    <div class="flex flex-col gap-4 p-4 rounded-xl bg-wos-800">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm text-wos-100" for="admin-pass">Admin Password</label>
+                            <input id="admin-pass" type="text" placeholder="Create a password for admin access"
+                                v-model="adminPassword"
+                                class="rounded-lg bg-white px-4 py-2 w-full text-wostools-900 text-sm focus:outline-none focus:ring-2 focus:ring-wosbutton-y50"
+                                required>
+                            <span class="text-xs text-wostools-text-secondary">This password will be required to manage
+                                this list.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <BaseButton @click="createTransferLink" :disabled="transferStore.isLoading" class="w-full mt-4">
                     <template v-if="transferStore.isLoading">
                         Creating...
                     </template>
@@ -214,6 +228,17 @@ function addInvite() {
 
 function removeInvite(index) {
     transferStore.newTransferData.alliance_invites.splice(index, 1);
+}
+
+// --- Criação do Link ---
+const adminPassword = ref('');
+
+function createTransferLink() {
+    if (!adminPassword.value) {
+        transferStore.showMessage({ text: 'Please enter an Admin Password', type: 'error' });
+        return;
+    }
+    transferStore.createTransferLink(adminPassword.value);
 }
 
 </script>

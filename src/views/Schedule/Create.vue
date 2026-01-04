@@ -38,6 +38,10 @@
                         <BaseInput id="training" label="Training" type="date" v-model="newLinkData.training_time" />
                     </div>
                     <div class="col-span-3">
+                        <BaseInput id="adminPass" label="Admin Password" type="text" v-model="newLinkData.adminPassword"
+                            required placeholder="Password for managing this schedule" />
+                    </div>
+                    <div class="col-span-3">
                         <BaseButton @click="createLink" :disabled="loading" class="w-full">
                             <template v-if="loading">
                                 Creating...
@@ -76,6 +80,11 @@ const newLinkData = ref({
 });
 
 function createLink() {
+    if (!newLinkData.value.adminPassword) {
+        scheduleStore.showMessage({ text: 'Please enter an Admin Password', type: 'error' });
+        return;
+    }
+
     loading.value = true;
     scheduleStore.createLinkSchedule(newLinkData.value)
         .catch(error => {

@@ -177,35 +177,45 @@ export const useScheduleStore = defineStore('schedule', {
       try {
         const { data, error } = await supabase
           .from('links')
-          .select('access_key')
+          .select('id, access_key') // We rely on server check if we filter, but here checking locally for now or refactor
+          // Wait, 'links' table might be public too. 
+          // Let's use the same pattern: check existence with key
           .eq('id', linkId)
+          .eq('access_key', key)
           .single();
 
-        if (error) {
-          throw error;
-        }
+        if (error || !data) {
+          // If error or no data found (meaning key didn't match if we rely on eq)
+          // But wait, the previous code selected access_key and checked locally.
+          // If we use .eq('access_key', key), we delegate the check to the DB.
+          // This requires the DB to confirm the match.
 
-        if (data.access_key === key) {
-          this.accessGranted = true;
+          // Existing logic:
+          // if (error) throw error;
+          // if (data.access_key === key) ...
 
-          // Salva no cache apenas se não veio do cache (evita loop)
-          if (!isFromCache) {
-            this.saveAccessToCache(linkId, key);
-            this.showMessage('Access Granted');
-          } else if (isFromCache) {
-            this.showMessage('Access restored from cache');
-          }
+          // New Logic: 
+          // If query returns a row, it matched.
 
-          return true;
-        } else {
           this.accessGranted = false;
-          this.clearAccessCache(linkId); // Limpa cache inválido
+          this.clearAccessCache(linkId);
 
           if (!isFromCache) {
             this.showMessage('Invalid Access Key');
           }
           return false;
         }
+
+        // If we got here, data exists, so key matched
+        this.accessGranted = true;
+
+        if (!isFromCache) {
+          this.saveAccessToCache(linkId, key);
+          this.showMessage('Access Granted');
+        } else if (isFromCache) {
+          this.showMessage('Access restored from cache');
+        }
+        return true;
 
       } catch (error) {
         console.error('Erro ao verificar access key:', error);
@@ -254,7 +264,7 @@ export const useScheduleStore = defineStore('schedule', {
     async createLinkSchedule(newLinkData) {
       this.loading = true;
       try {
-        const accessKey = this.generateUniqueCode(6);
+        const accessKey = newLinkData.adminPassword || this.generateUniqueCode(6);
 
         const { data, error } = await supabase
           .from('links')

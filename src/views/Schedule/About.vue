@@ -6,7 +6,7 @@
 
         <div class="bg-wostools-750 p-8 rounded-xl flex flex-col gap-6 items-center text-center">
             <img src="/images/state-power.png" alt="Schedule" class="w-16 h-16">
-            <h1 class="text-3xl font-bold text-white">SVS Bonus</h1>
+            <h1 class="text-3xl font-bold text-white">SVS Buff</h1>
 
 
             <p class="text-wostools-text-secondary text-lg text-center">

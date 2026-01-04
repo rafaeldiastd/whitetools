@@ -19,7 +19,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const tabs = [
-    { label: 'SVS Bonus', link: '/schedule', icon: '/images/state-power.png' },
+    { label: 'SVS Buff', link: '/schedule', icon: '/images/state-power.png' },
     { label: 'BearHive', link: '/bearhive', icon: '/images/bearspace-ico.png' },
     { label: 'Transfers', link: '/transfer', icon: '/images/transfer.png' },
 ];

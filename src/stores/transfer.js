@@ -68,16 +68,20 @@ export const useTransferStore = defineStore('transfer', {
 
     // --- AÇÕES ASYNC (BANCO DE DADOS) ---
 
-    async createTransferLink() {
+    async createTransferLink(adminPassword) {
       this.loading = true;
       this.clearMessage();
       const id = this.generateUniqueCode(8);
-      const accessKey = this.generateUniqueCode(6);
+      // Use provided password or fallback to generated (though UI should prevent empty)
+      const accessKey = adminPassword || this.generateUniqueCode(6);
 
       try {
         const invitesPayload = this.newTransferData.alliance_invites.reduce((acc, invite) => {
           if (invite.tag && (invite.spots !== null && invite.spots !== '')) {
-            acc[invite.tag.toUpperCase()] = Number(invite.spots);
+            acc[invite.tag.toUpperCase()] = {
+              spots: Number(invite.spots),
+              password: this.generateUniqueCode(6) // Generate alliance password
+            };
           }
           return acc;
         }, {});
@@ -108,7 +112,7 @@ export const useTransferStore = defineStore('transfer', {
         if (error) {
           if (error.code === '23505') {
             console.warn('Slug collision detected, retrying...');
-            return this.createTransferLink();
+            return this.createTransferLink(adminPassword);
           }
           throw error;
         }
@@ -156,8 +160,23 @@ export const useTransferStore = defineStore('transfer', {
         }
 
         if (data) {
-          const { transfer_invites, ...listDetails } = data;
-          this.currentList = listDetails;
+          const { transfer_invites, alliance_invites, ...listDetails } = data;
+
+          // Strip passwords from the state so we don't accidentally display them
+          // unless explicitly needed (admin logic will fetch them differently or we keep them hidden)
+          const safeAllianceInvites = {};
+          if (alliance_invites) {
+            for (const [tag, info] of Object.entries(alliance_invites)) {
+              // Handle both old format (number) and new format (object)
+              if (typeof info === 'object' && info !== null) {
+                safeAllianceInvites[tag] = { spots: info.spots }; // Exclude password
+              } else {
+                safeAllianceInvites[tag] = info; // Old format
+              }
+            }
+          }
+
+          this.currentList = { ...listDetails, alliance_invites: safeAllianceInvites };
           this.currentInvites = transfer_invites || [];
         } else {
           throw new Error('Transfer list not found.');
@@ -175,25 +194,89 @@ export const useTransferStore = defineStore('transfer', {
       try {
         const { data, error } = await supabase
           .from('transfer_lists')
-          .select('access_key')
+          .select('id')
           .eq('id', listId)
+          .eq('access_key', key)
           .single();
 
-        if (error) throw error;
-
-        if (data.access_key === key) {
-          this.accessGranted = true;
-          this.showMessage({ text: 'Access Granted', type: 'success' });
-          return true;
-        } else {
+        if (error || !data) {
           this.accessGranted = false;
           this.showMessage({ text: 'Invalid Access Key', type: 'error' });
           return false;
         }
+
+        this.accessGranted = true;
+        this.showMessage({ text: 'Access Granted', type: 'success' });
+        return true;
+
       } catch (error) {
         console.error('Error verifying access key:', error);
         this.showMessage({ text: 'Error verifying access key' });
         return false;
+      }
+    },
+
+    async verifyAlliancePassword(tag, password, listId) {
+      try {
+        // Check if password matches via JSON path query
+        // Note: tag must be sanitized or properly escaped if used in path
+        // Supabase/Postgrest arrow operator '->' gets JSON object field
+        const { data, error } = await supabase
+          .from('transfer_lists')
+          .select('id')
+          .eq('id', listId)
+          .eq(`alliance_invites->${tag.toUpperCase()}->>password`, password)
+          .single();
+
+        if (error || !data) {
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error('Error verifying alliance password:', error);
+        return false;
+      }
+    },
+
+    // New helper to fetch sensitive data for Admin view
+    async fetchAdminDetails(listId) {
+      if (!this.accessGranted) return null;
+      try {
+        const { data, error } = await supabase
+          .from('transfer_lists')
+          .select('alliance_invites')
+          .eq('id', listId)
+          .single();
+
+        if (data && data.alliance_invites) {
+          return data.alliance_invites; // Contains passwords
+        }
+        return null;
+      } catch (error) {
+        console.error("Error fetching admin details", error);
+        return null;
+      }
+    },
+
+    async updateInviteType(fid, listId, type) {
+      // Optimistic update
+      const invite = this.currentInvites.find(i => i.fid === fid);
+      const previousType = invite ? invite.type_invite : null;
+      if (invite) invite.type_invite = type;
+
+      try {
+        const { error } = await supabase
+          .from('transfer_invites')
+          .update({ type_invite: type })
+          .eq('fid', fid)
+          .eq('transfer_list_id', listId);
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error updating invite type:', error);
+        // Revert on error
+        if (typeof invite !== 'undefined' && invite) invite.type_invite = previousType;
+        this.showMessage({ text: 'Error updating invite type.', type: 'error' });
       }
     },
 
@@ -220,6 +303,7 @@ export const useTransferStore = defineStore('transfer', {
         transfer_list_id: playerData.transfer_list_id,
         labyrinth: playerData.labyrinth,
         power: playerData.power,
+        type_invite: playerData.type_invite || 'comum',
       };
 
       try {
@@ -278,6 +362,26 @@ export const useTransferStore = defineStore('transfer', {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       return code;
+    },
+
+    async updateTransferListSettings(listId, payload) {
+      this.loading = true;
+      try {
+        const { error } = await supabase
+          .from('transfer_lists')
+          .update(payload)
+          .eq('id', listId);
+
+        if (error) throw error;
+        this.showMessage({ text: 'Settings updated successfully!', type: 'success' });
+        return true;
+      } catch (error) {
+        console.error('Error updating settings:', error);
+        this.showMessage({ text: 'Error updating settings.', type: 'error' });
+        return false;
+      } finally {
+        this.loading = false;
+      }
     },
 
   }
