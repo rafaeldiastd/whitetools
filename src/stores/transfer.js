@@ -465,6 +465,7 @@ export const useTransferStore = defineStore('transfer', {
       return code;
     },
 
+
     async updateTransferListSettings(listId, payload) {
       this.loading = true;
       try {
@@ -482,6 +483,29 @@ export const useTransferStore = defineStore('transfer', {
         return false;
       } finally {
         this.loading = false;
+      }
+    },
+
+    async updatePlayerStatus(fid, listId, status) {
+      // Optimistic update
+      const invite = this.currentInvites.find(i => i.fid === fid);
+      const previousStatus = invite ? invite.status : null;
+      if (invite) invite.status = status;
+
+      try {
+        const { error } = await supabase
+          .from('transfer_invites')
+          .update({ status: status })
+          .eq('fid', fid)
+          .eq('transfer_list_id', listId);
+
+        if (error) throw error;
+        // this.showMessage({ text: 'Status updated successfully', type: 'success' });
+      } catch (error) {
+        console.error('Error updating player status:', error);
+        // Revert on error
+        if (invite) invite.status = previousStatus;
+        this.showMessage({ text: 'Error updating status.', type: 'error' });
       }
     },
 

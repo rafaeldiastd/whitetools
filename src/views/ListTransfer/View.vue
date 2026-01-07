@@ -73,6 +73,22 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Sorting Controls -->
+        <div class="w-full flex justify-end gap-2 mb-[-10px] px-2">
+             <select v-model="sortBy" class="bg-wostools-750 text-white text-xs rounded-lg px-2 py-1 border border-wostools-500/50 focus:outline-none">
+                <option value="nickname">Name</option>
+                <option value="labyrinth">Labyrinth</option>
+                <option value="power">Power</option>
+                <option value="stove_lv">Furnace</option>
+                <option value="type_invite">Type</option>
+                <option value="status">Status</option>
+            </select>
+            <button @click="sortDesc = !sortDesc" class="bg-wostools-750 text-white text-xs rounded-lg px-2 py-1 border border-wostools-500/50 hover:bg-wostools-600 transition">
+                {{ sortDesc ? 'Desc ⬇' : 'Asc ⬆' }}
+            </button>
+        </div>
+
         <div v-for="(count, allianceName) in transferStore.currentList?.alliance_invites" :key="allianceName"
             class="w-full flex flex-col bg-wostools-750  rounded-xl">
             <div class="flex justify-between text-wos-200 px-4 py-2 rounded-t-xl bg-wostools-400">
@@ -93,38 +109,68 @@
                 </div>
             </div>
             <div class="flex flex-col gap-2 p-4 ">
-                <div v-for="player in transferStore.currentInvites.filter(p => p.alliance_target === allianceName).sort((a, b) => b.labyrinth - a.labyrinth)"
+                 <div v-for="player in getSortedPlayers(allianceName)"
                     :key="player.id" class="relative flex flex-col">
-                    <div class="grid rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between bg-wos-5 text-wos-800 bg-wos-500"
-                        :class="{ 'grid-cols-8': transferStore.isAdmin || transferStore.isAllianceGlobal, 'grid-cols-7': !transferStore.isAdmin && !transferStore.isAllianceGlobal }">
+                    <div class="grid rounded-xl py-2 px-2 gap-2 min-h-[68px] items-center justify-between bg-wos-5 text-wos-800 bg-wos-500 transition-all duration-300"
+                        :class="[
+                            { 'grid-cols-8': transferStore.isAdmin || transferStore.isAllianceGlobal, 'grid-cols-7': !transferStore.isAdmin && !transferStore.isAllianceGlobal },
+                            player.status === 'transferred' ? 'grayscale opacity-75' : '',
+                            player.status === 'refused' ? 'border-2 border-red-500 bg-red-100/10' : ''
+                        ]">
                         <div class="col-span-1 flex flex-col items-center justify-center gap-[-10px]">
                             <img class="rounded-xl w-[50px] h-full object-fit flex items-center justify-center bg-wos-400"
                                 :src="player.avatar_image" alt="">
                             <img :src="player.stove_lv_content" class="h-7 w-7 mt-[-10px]" alt="">
                         </div>
                         <div class="col-span-4 flex flex-col justify-center  text-xs">
-                            <p class="font-wos">{{ player.nickname }}</p>
+                            <div class="flex items-center gap-2">
+                                <p class="font-wos">{{ player.nickname }}</p>
+                                <!-- Status Indicator for everyone -->
+                                <span v-if="player.status && player.status !== 'pending'" 
+                                    class="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold text-white shadow-sm flex items-center gap-1"
+                                    :class="{
+                                        'bg-gray-500': player.status === 'transferred',
+                                        'bg-red-600': player.status === 'refused',
+                                        'bg-wostools-red': player.status === 'pending'
+                                    }">
+                                    {{ player.status }}
+                                    <span v-if="player.status === 'refused'" class="text-xs">⚠️</span>
+                                </span>
+                            </div>
                             <p class="font-wos">ID: {{ player.fid }}</p>
                             <p class="font-wos">State: {{ player.state_id }}</p>
 
-                            <!-- Type Invite Display/Edit -->
-                            <div v-if="player.type_invite || transferStore.isAdmin" class="mt-1">
-                                <select v-if="transferStore.isAdmin" :value="player.type_invite || 'common'"
-                                    @change="transferStore.updateInviteType(player.fid, transferStore.currentList.id, $event.target.value)"
-                                    class="bg-wos-400 text-wos-100 rounded px-1 py-0.5 text-[10px] border border-wos-300 focus:outline-none">
-                                    <option value="common">Common</option>
-                                    <option value="special">Special</option>
-                                    <option value="free">Free Entry</option>
-                                </select>
-                                <span v-else
-                                    class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-white shadow-sm"
-                                    :class="{
-                                        'bg-gray-500': !player.type_invite || player.type_invite === 'common',
-                                        'bg-yellow-600': player.type_invite === 'special',
-                                        'bg-green-600': player.type_invite === 'free'
-                                    }">
-                                    {{ player.type_invite || 'Common' }}
-                                </span>
+                            <div class="flex gap-2 mt-1">
+                                <!-- Type Invite Display/Edit -->
+                                <div v-if="player.type_invite || transferStore.isAdmin">
+                                    <select v-if="transferStore.isAdmin" :value="player.type_invite || 'common'"
+                                        @change="transferStore.updateInviteType(player.fid, transferStore.currentList.id, $event.target.value)"
+                                        class="bg-wos-400 text-wos-100 rounded px-1 py-0.5 text-[10px] border border-wos-300 focus:outline-none">
+                                        <option value="common">Common</option>
+                                        <option value="special">Special</option>
+                                        <option value="free">Free Entry</option>
+                                    </select>
+                                    <span v-else
+                                        class="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-white shadow-sm"
+                                        :class="{
+                                            'bg-gray-500': !player.type_invite || player.type_invite === 'common',
+                                            'bg-yellow-600': player.type_invite === 'special',
+                                            'bg-green-600': player.type_invite === 'free'
+                                        }">
+                                        {{ player.type_invite || 'Common' }}
+                                    </span>
+                                </div>
+
+                                <!-- Status Edit for Admin -->
+                                <div v-if="transferStore.isAdmin">
+                                    <select :value="player.status || 'pending'"
+                                        @change="transferStore.updatePlayerStatus(player.fid, transferStore.currentList.id, $event.target.value)"
+                                        class="bg-wos-400 text-wos-100 rounded px-1 py-0.5 text-[10px] border border-wos-300 focus:outline-none">
+                                        <option value="pending">Pending</option>
+                                        <option value="transferred">Transferred</option>
+                                        <option value="refused">Refused</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="col-span-2 flex flex-col text-xs">
@@ -280,6 +326,34 @@ const loading = ref(false);
 const showAdminModal = ref(false);
 const showAddPlayerModal = ref(false); // New Modal State
 const accessKeyInput = ref('');
+
+const sortBy = ref('labyrinth');
+const sortDesc = ref(true);
+
+function getSortedPlayers(allianceName) {
+    const players = transferStore.currentInvites.filter(p => p.alliance_target === allianceName);
+    
+    return players.sort((a, b) => {
+        let valA = a[sortBy.value];
+        let valB = b[sortBy.value];
+
+        // Handle null/undefined values safely
+        if (valA === null || valA === undefined) valA = '';
+        if (valB === null || valB === undefined) valB = '';
+
+        // Handle string comparison for non-numeric fields
+        if (typeof valA === 'string' && typeof valB === 'string') {
+             valA = valA.toLowerCase();
+             valB = valB.toLowerCase();
+        }
+
+        let comparison = 0;
+        if (valA > valB) comparison = 1;
+        else if (valA < valB) comparison = -1;
+
+        return sortDesc.value ? comparison * -1 : comparison;
+    });
+}
 
 const powerInput = ref('');
 
