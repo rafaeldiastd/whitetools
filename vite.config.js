@@ -16,4 +16,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    proxy: {
+      '/api/centurygame': {
+        target: 'https://wos-giftcode-api.centurygame.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/centurygame/, ''),
+        headers: {
+          'Origin': 'https://wos-giftcode.centurygame.com',
+          'Referer': 'https://wos-giftcode.centurygame.com/'
+        }
+      }
+    }
+  }
 })

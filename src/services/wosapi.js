@@ -5,8 +5,15 @@ const wosKey = 'tB87#kPtkxqOS2';
 
 function generateSign(data) {
     const sortedKeys = Object.keys(data).sort();
-    const signStr = sortedKeys.map(key => `${key}=${data[key]}`).join('&') + wosKey;
-    return CryptoJS.MD5(signStr).toString();
+
+    const baseString = sortedKeys.reduce((acc, key, index) => {
+        let value = data[key];
+        const formattedValue = (typeof value === 'object') ? JSON.stringify(value) : value;
+        return acc + (index > 0 ? '&' : '') + key + '=' + formattedValue;
+    }, '');
+
+    const finalString = baseString + wosKey;
+    return CryptoJS.MD5(finalString).toString();
 }
 
 async function getPlayerInfo(playerId) {
@@ -16,8 +23,17 @@ async function getPlayerInfo(playerId) {
     };
 
     try {
-        const signedData = { ...data, sign: generateSign(data) };
-        const response = await axios.post('https://wos-giftcode-api.centurygame.com/api/player', signedData);
+        const sign = generateSign(data);
+        const params = new URLSearchParams();
+        params.append('fid', data.fid);
+        params.append('time', data.time);
+        params.append('sign', sign);
+
+        const response = await axios.post('/api/centurygame/api/player', params.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
 
         if (response.data.err_code === 40004) {
             console.warn(`Player ID ${playerId} not found: ${response.data.msg}`);
