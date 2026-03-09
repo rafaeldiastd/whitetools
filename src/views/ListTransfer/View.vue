@@ -409,7 +409,7 @@ function getFCName(stove_lv) {
         return `F${level}`;
     }
     
-    const fcLevel = Math.floor((level - 36) / 5) + 1;
+    const fcLevel = Math.floor((level - 35) / 5) + 1;
     return `FC${fcLevel}`;
 }
 
