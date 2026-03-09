@@ -157,13 +157,13 @@ const furnaceOptions = [
     { text: 'Furnace 30', value: 30 }
 ];
 
-const baseLevel = 31; // Nível inicial do FC1
+const baseLevel = 36; // Nível inicial do FC1 (No backend 30 + 1 de transição + 5 pro FC1 = 36)
 const numCamps = 10;   // De FC1 a FC10
 
 // Gera as opções de FC1 a FC10
 for (let i = 0; i < numCamps; i++) {
     const campNumber = i + 1;
-    const startLevel = baseLevel + (i * 5); // 31, 36, 41...
+    const startLevel = baseLevel + (i * 5); // 36, 41, 46, 51...
 
     furnaceOptions.push({
         text: `FC${campNumber}`,
