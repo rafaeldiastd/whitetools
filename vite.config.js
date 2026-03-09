@@ -18,10 +18,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api/centurygame': {
+      '/api/player': {
         target: 'https://wos-giftcode-api.centurygame.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/centurygame/, ''),
         headers: {
           'Origin': 'https://wos-giftcode.centurygame.com',
           'Referer': 'https://wos-giftcode.centurygame.com/'

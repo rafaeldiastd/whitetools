@@ -29,7 +29,7 @@ async function getPlayerInfo(playerId) {
         params.append('time', data.time);
         params.append('sign', sign);
 
-        const response = await axios.post('/api/centurygame/api/player', params.toString(), {
+        const response = await axios.post('/api/player', params.toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
