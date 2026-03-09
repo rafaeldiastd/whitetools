@@ -403,14 +403,14 @@ function parseSimplifiedNumber(str) {
 
 function getFCName(stove_lv) {
     const level = Number(stove_lv);
-    if (level >= 34 && level <= 39) return 'FC1';
-    if (level >= 40 && level <= 44) return 'FC2';
-    if (level >= 45 && level <= 49) return 'FC3';
-    if (level >= 50 && level <= 54) return 'FC4';
-    if (level >= 55 && level <= 59) return 'FC5';
-    if (level >= 60 && level <= 64) return 'FC6';
-    if (level >= 65 && level <= 69) return 'FC7';
-    return 'N/A';
+    if (!level || isNaN(level)) return 'N/A';
+    
+    if (level < 36) {
+        return `F${level}`;
+    }
+    
+    const fcLevel = Math.floor((level - 36) / 5) + 1;
+    return `FC${fcLevel}`;
 }
 
 onMounted(async () => {
